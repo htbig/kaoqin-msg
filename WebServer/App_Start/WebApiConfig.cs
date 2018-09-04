@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-
+using WebServer;
+using WebServer.Controllers;
 namespace WebServer
 {
     public static class WebApiConfig
@@ -19,6 +20,11 @@ namespace WebServer
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+            config.Routes.MapHttpRoute(
+                name: "UserInfo",
+                routeTemplate: "userinfo/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );            
         }
     }
 }

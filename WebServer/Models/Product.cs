@@ -5,11 +5,15 @@ using System.Web;
 
 namespace WebServer.Models
 {
-    public class Product
+    public class User
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Category { get; set; }
-        public decimal Price { get; set; }
+        public int idwFingerIndex { get; set; }
+        public string sdwEnrollNumber { get; set; }
+        public string sName { get; set; }
+        public string sPassword { get; set; }
+        public string sTmpData { get; set; }
+        public int iPrivilege { get; set; }
+        public bool bEnabled { get; set; }
+        public int iFlag { get; set; }
     }
 }
