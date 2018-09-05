@@ -16,7 +16,7 @@ namespace WebServer.Controllers
         {
             new User { sName = "ht"},
         };
-
+ 
         public IEnumerable<User> GetAllProducts()
         {
             return products;
@@ -33,18 +33,48 @@ namespace WebServer.Controllers
         }
         public IHttpActionResult GetUserInfo(string id)
         {          
-            WebServer.WebApiApplication.user.btnDownloadUserInfo_Click();
+            if (id == null)
+            {
+                id = "1";
+            }
+            int index = int.Parse(id);
+            if (index >= WebServer.WebApiApplication.users.Length )
+            {
+                System.Diagnostics.Debug.WriteLine("has no machine number");
+                return Ok(-1);
+            }
+            WebServer.WebApiApplication.users[index].btnDownloadUserInfo_Click();
             return Ok(0);
         }
 
         public IHttpActionResult PostUserInfo(string id)
         {
-            WebServer.WebApiApplication.user.btnUploadUserInfo_Click();
+            if (id == null)
+            {
+                id = "1";
+            }
+            int index = int.Parse(id);
+            if (index >= WebServer.WebApiApplication.users.Length)
+            {
+                System.Diagnostics.Debug.WriteLine("has no machine number");
+                return Ok(-1);
+            }
+            WebServer.WebApiApplication.users[index].btnUploadUserInfo_Click();
             return Ok(0);
         }
         public IHttpActionResult PostBatchUserInfo(string id)
         {
-            WebServer.WebApiApplication.user.btnBatchUpdate_Click();
+            if (id == null)
+            {
+                id = "1";
+            }
+            int index = int.Parse(id);
+            if (index >= WebServer.WebApiApplication.users.Length)
+            {
+                System.Diagnostics.Debug.WriteLine("has no machine number");
+                return Ok(-1);
+            }
+            WebServer.WebApiApplication.users[index].btnBatchUpdate_Click();
             return Ok(0);
         }
         [HttpPost]
@@ -52,16 +82,22 @@ namespace WebServer.Controllers
         {
             string begin_time = Convert.ToString(obj.begin_time);
             string end_time = Convert.ToString(obj.end_time);
+            int id = Convert.ToInt32(obj.id);
+            if (id >= WebServer.WebApiApplication.users.Length)
+            {
+                System.Diagnostics.Debug.WriteLine("has no machine number");
+                return Ok(-1);
+            }
             bool bCvtBTime = false, bCvtETime = false ;
             DateTime t1, t2;
             bCvtBTime = DateTime.TryParse(begin_time, out t1);
             bCvtETime = DateTime.TryParse(end_time, out t2);
             if ((bCvtBTime ^ bCvtETime) == true || (bCvtBTime == true && (t2 < t1)))
             {
-                System.Diagnostics.Debug.WriteLine("bad request");
+                System.Diagnostics.Debug.WriteLine("bad parameter");
                 return Ok(0);
             }
-            WebServer.WebApiApplication.user.btnGetGeneralLogData_Click(t1,t2);
+            WebServer.WebApiApplication.users[id].btnGetGeneralLogData_Click(t1,t2);
             return Ok(0);
         }
     }

@@ -17,8 +17,9 @@ namespace UserInfo
 {
     public partial class UserInfoMain
     {
-        public UserInfoMain()
+        public UserInfoMain(int machieNumber)
         {
+            iNumber = machieNumber;
             //InitializeComponent();
         }
 
@@ -32,6 +33,7 @@ namespace UserInfo
         #region Communication
         private bool bIsConnected = false;//the boolean value identifies whether the device is connected
         private int iMachineNumber = 1;//the serial number of the device.After connecting the device ,this value will be changed.
+        private int iNumber; //Identification different machie
         private Thread trigger_t;
         private void tfn_trigger()
         {
@@ -45,12 +47,12 @@ namespace UserInfo
         }
         //If your device supports the TCP/IP communications, you can refer to this.
         //when you are using the tcp/ip communication,you can distinguish different devices by their IP address.
-        public void btnConnect_Click(/*object sender, EventArgs e*/)
+        public void btnConnect_Click(string ip_addr/*object sender, EventArgs e*/)
         {            
             int idwErrorCode = 0;
 
             axCZKEM1.PullMode = 1;
-            bIsConnected = axCZKEM1.Connect_Net("172.21.30.135", 4370);
+            bIsConnected = axCZKEM1.Connect_Net(ip_addr, 4370);
             if (bIsConnected == true)
             {              
                 iMachineNumber = 1;//In fact,when you are using the tcp/ip communication,this parameter will be ignored,that is any integer will all right.Here we use 1.
@@ -114,7 +116,7 @@ namespace UserInfo
             string sCardnumber = "";
             string S = "";
             S = "工号," + "姓名," + "指纹索引," + "指纹序列," + "等级," + "密码," + "使能," + "标记," + "人脸索引," + "人脸序列," + "人脸字节数," + "卡号";
-            FileStream fs = new FileStream("C:\\ustar\\WebServer\\userInfo.csv", FileMode.OpenOrCreate);
+            FileStream fs = new FileStream("C:\\ustar\\WebServer\\userInfo-"+ iNumber.ToString()+".csv", FileMode.OpenOrCreate);
             StreamWriter sw = new StreamWriter(fs);
             sw.WriteLine(S);
             bool bHasFg = false;
@@ -182,7 +184,7 @@ namespace UserInfo
             string sTmpFaceData = "";
             int iTmpLength = 0;
             string[] sArray;
-            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo.csv");
+            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo-" + iNumber.ToString() + ".csv");
             string sLine = "";
             sLine = objReader.ReadLine();
             sLine = objReader.ReadLine();
@@ -275,7 +277,7 @@ namespace UserInfo
             string sTmpFaceData="";
             int iTmpLength = 0;
             string[] sArray;
-            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo.csv");
+            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo-" + iNumber.ToString() + ".csv");
             string sLine = "";
             sLine = objReader.ReadLine();
             sLine = objReader.ReadLine();
@@ -344,7 +346,7 @@ namespace UserInfo
             string data = "[";
             string S = "";
             S = "工号,验证方式,考勤状态,考勤时间,工作号,机器号\r\n";
-            FileStream fs = new FileStream("C:\\ustar\\WebServer\\attLog.csv", FileMode.OpenOrCreate);
+            FileStream fs = new FileStream("C:\\ustar\\WebServer\\attLog-" + iNumber.ToString() + ".csv", FileMode.OpenOrCreate);
             StreamWriter sw = new StreamWriter(fs);
             sw.Write(S);
             axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
@@ -826,7 +828,7 @@ namespace UserInfo
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                FileStream fs = new FileStream("C:\\ustar\\WebServer\\verifyError.log", FileMode.Append);
+                FileStream fs = new FileStream("C:\\ustar\\WebServer\\verifyError-" + iNumber.ToString() + ".log", FileMode.Append);
                 StreamWriter sw = new StreamWriter(fs);
                 string S = data + " failed to send to:" + ex.InnerException.Message; 
                 sw.WriteLine(S);
