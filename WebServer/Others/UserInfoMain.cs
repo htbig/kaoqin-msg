@@ -421,346 +421,369 @@ namespace UserInfo
             fs.Close(); 
             axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
         }
- 
-            //Delete a certain user's fingerprint template of specified index
-            //You shuold input the the user id and the fingerprint index you will delete
-            //The difference between the two functions "SSR_DelUserTmpExt" and "SSR_DelUserTmp" is that the former supports 24 bits' user id.
-            //private void btnSSR_DelUserTmpExt_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
+        //Clear all attendance records from terminal
+        public void btnClearGLog_Click()
+        {
+            if (bIsConnected == false)
+            {
+                System.Console.Write("Please connect the device first", "Error");
+                return;
+            }
+            int idwErrorCode = 0;
 
-            //    if (cbUserIDTmp.Text.Trim() == "" || cbFingerIndex.Text.Trim() == "")
-            //    {
-            //        MessageBox.Show("Please input the UserID and FingerIndex first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+            axCZKEM1.EnableDevice(iMachineNumber, false);//disable the device
+            if (axCZKEM1.ClearGLog(iMachineNumber))
+            {
+                axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+                System.Console.Write("All att Logs have been cleared from teiminal!", "Success");
+            }
+            else
+            {
+                axCZKEM1.GetLastError(ref idwErrorCode);
+                System.Console.Write("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+            }
+            axCZKEM1.EnableDevice(iMachineNumber, true);//enable the device
+        }
 
-            //    string sUserID = cbUserIDTmp.Text.Trim();
-            //    int iFingerIndex = Convert.ToInt32(cbFingerIndex.Text.Trim());
+        //Delete a certain user's fingerprint template of specified index
+        //You shuold input the the user id and the fingerprint index you will delete
+        //The difference between the two functions "SSR_DelUserTmpExt" and "SSR_DelUserTmp" is that the former supports 24 bits' user id.
+        //private void btnSSR_DelUserTmpExt_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.SSR_DelUserTmpExt(iMachineNumber, sUserID, iFingerIndex))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //        MessageBox.Show("SSR_DelUserTmpExt,UserID:" + sUserID + " FingerIndex:" + iFingerIndex.ToString(), "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
-            //}
+        //    if (cbUserIDTmp.Text.Trim() == "" || cbFingerIndex.Text.Trim() == "")
+        //    {
+        //        MessageBox.Show("Please input the UserID and FingerIndex first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //Clear all the fingerprint templates in the device(While the parameter DataFlag  of the Function "ClearData" is 2 )
-            //private void btnClearDataTmps_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    string sUserID = cbUserIDTmp.Text.Trim();
+        //    int iFingerIndex = Convert.ToInt32(cbFingerIndex.Text.Trim());
 
-            //    int iDataFlag = 2;
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.SSR_DelUserTmpExt(iMachineNumber, sUserID, iFingerIndex))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //        MessageBox.Show("SSR_DelUserTmpExt,UserID:" + sUserID + " FingerIndex:" + iFingerIndex.ToString(), "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
+        //}
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //        MessageBox.Show("Clear all the fingerprint templates!", "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
-            //}
+        //Clear all the fingerprint templates in the device(While the parameter DataFlag  of the Function "ClearData" is 2 )
+        //private void btnClearDataTmps_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //Delete all the user information in the device,while the related fingerprint templates will be deleted either. 
-            //(While the parameter DataFlag  of the Function "ClearData" is 5 )
-            //private void btnClearDataUserInfo_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    int iDataFlag = 2;
 
-            //    int iDataFlag = 5;
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //        MessageBox.Show("Clear all the fingerprint templates!", "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
+        //}
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //        MessageBox.Show("Clear all the UserInfo data!", "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
-            //}
+        //Delete all the user information in the device,while the related fingerprint templates will be deleted either. 
+        //(While the parameter DataFlag  of the Function "ClearData" is 5 )
+        //private void btnClearDataUserInfo_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //Delete a kind of data that some user has enrolled
-            //The range of the Backup Number is from 0 to 9 and the specific meaning of Backup number is described in the development manual,pls refer to it.
-            //private void btnDeleteEnrollData_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
+        //    int iDataFlag = 5;
 
-            //    if (cbUserIDDE.Text.Trim() == "" || cbBackupDE.Text.Trim() == "")
-            //    {
-            //        MessageBox.Show("Please input the UserID and BackupNumber first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //        MessageBox.Show("Clear all the UserInfo data!", "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
+        //}
 
-            //    string sUserID = cbUserIDDE.Text.Trim();
-            //    int iBackupNumber = Convert.ToInt32(cbBackupDE.Text.Trim());
+        //Delete a kind of data that some user has enrolled
+        //The range of the Backup Number is from 0 to 9 and the specific meaning of Backup number is described in the development manual,pls refer to it.
+        //private void btnDeleteEnrollData_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.SSR_DeleteEnrollData(iMachineNumber, sUserID, iBackupNumber))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //        MessageBox.Show("DeleteEnrollData,UserID=" + sUserID + " BackupNumber=" + iBackupNumber.ToString(), "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
-            //}
+        //    if (cbUserIDDE.Text.Trim() == "" || cbBackupDE.Text.Trim() == "")
+        //    {
+        //        MessageBox.Show("Please input the UserID and BackupNumber first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //Clear all the administrator privilege(not clear the administrators themselves)
-            //private void btnClearAdministrators_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    string sUserID = cbUserIDDE.Text.Trim();
+        //    int iBackupNumber = Convert.ToInt32(cbBackupDE.Text.Trim());
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.ClearAdministrators(iMachineNumber))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //        MessageBox.Show("Successfully clear administrator privilege from teiminal!", "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
-            //}
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.SSR_DeleteEnrollData(iMachineNumber, sUserID, iBackupNumber))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //        MessageBox.Show("DeleteEnrollData,UserID=" + sUserID + " BackupNumber=" + iBackupNumber.ToString(), "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
+        //}
 
-            //Download users' face templates(in strings)(For TFT screen IFace series devices only)
-            //private void btnDownLoadFace_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
+        //Clear all the administrator privilege(not clear the administrators themselves)
+        //private void btnClearAdministrators_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //    string sUserID = "";
-            //    string sName = "";
-            //    string sPassword = "";
-            //    int iPrivilege = 0;
-            //    bool bEnabled = false;
-            //    int iFaceIndex = 50;//the only possible parameter value
-            //    string sTmpData = "";
-            //    int iLength = 0;
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.ClearAdministrators(iMachineNumber))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //        MessageBox.Show("Successfully clear administrator privilege from teiminal!", "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
+        //}
 
-            //    lvFace.Items.Clear();
-            //    lvFace.BeginUpdate();
+        //Download users' face templates(in strings)(For TFT screen IFace series devices only)
+        //private void btnDownLoadFace_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
 
-            //    Cursor = Cursors.WaitCursor;
-            //    axCZKEM1.EnableDevice(iMachineNumber, false);
-            //    axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
+        //    string sUserID = "";
+        //    string sName = "";
+        //    string sPassword = "";
+        //    int iPrivilege = 0;
+        //    bool bEnabled = false;
+        //    int iFaceIndex = 50;//the only possible parameter value
+        //    string sTmpData = "";
+        //    int iLength = 0;
 
-            //    while (axCZKEM1.SSR_GetAllUserInfo(iMachineNumber, out sUserID, out sName, out sPassword, out iPrivilege, out bEnabled))//get all the users' information from the memory
-            //    {
-            //        if (axCZKEM1.GetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, ref sTmpData, ref iLength))//get the face templates from the memory
-            //        {
-            //            ListViewItem list = new ListViewItem();
-            //            list.Text = sUserID;
-            //            list.SubItems.Add(sName);
-            //            list.SubItems.Add(sPassword);
-            //            list.SubItems.Add(iPrivilege.ToString());
-            //            list.SubItems.Add(iFaceIndex.ToString());
-            //            list.SubItems.Add(sTmpData);
-            //            list.SubItems.Add(iLength.ToString());
-            //            if (bEnabled == true)
-            //            {
-            //                list.SubItems.Add("true");
-            //            }
-            //            else
-            //            {
-            //                list.SubItems.Add("false");
-            //            }
-            //            lvFace.Items.Add(list);
-            //        }
-            //    }
-            //    axCZKEM1.EnableDevice(iMachineNumber, true);
-            //    lvFace.EndUpdate();
-            //    Cursor = Cursors.Default;
-            //}
+        //    lvFace.Items.Clear();
+        //    lvFace.BeginUpdate();
 
-            //Upload users' face template(in strings)(For TFT screen IFace series devices only)
-            //Uploading the face templates in batches is not supported temporarily.
-            //private void btnUploadFace_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    Cursor = Cursors.WaitCursor;
+        //    axCZKEM1.EnableDevice(iMachineNumber, false);
+        //    axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
 
-            //    string sUserID = "";
-            //    string sName = "";
-            //    int iFaceIndex = 0;
-            //    string sTmpData = "";
-            //    int iLength = 0;
-            //    int iPrivilege = 0;
-            //    string sPassword = "";
-            //    string sEnabled = "";
-            //    bool bEnabled = false;
+        //    while (axCZKEM1.SSR_GetAllUserInfo(iMachineNumber, out sUserID, out sName, out sPassword, out iPrivilege, out bEnabled))//get all the users' information from the memory
+        //    {
+        //        if (axCZKEM1.GetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, ref sTmpData, ref iLength))//get the face templates from the memory
+        //        {
+        //            ListViewItem list = new ListViewItem();
+        //            list.Text = sUserID;
+        //            list.SubItems.Add(sName);
+        //            list.SubItems.Add(sPassword);
+        //            list.SubItems.Add(iPrivilege.ToString());
+        //            list.SubItems.Add(iFaceIndex.ToString());
+        //            list.SubItems.Add(sTmpData);
+        //            list.SubItems.Add(iLength.ToString());
+        //            if (bEnabled == true)
+        //            {
+        //                list.SubItems.Add("true");
+        //            }
+        //            else
+        //            {
+        //                list.SubItems.Add("false");
+        //            }
+        //            lvFace.Items.Add(list);
+        //        }
+        //    }
+        //    axCZKEM1.EnableDevice(iMachineNumber, true);
+        //    lvFace.EndUpdate();
+        //    Cursor = Cursors.Default;
+        //}
 
-            //    Cursor = Cursors.WaitCursor;
-            //    axCZKEM1.EnableDevice(iMachineNumber, false);
-            //    for (int i = 0; i < lvFace.Items.Count; i++)
-            //    {
-            //        sUserID = lvFace.Items[i].SubItems[0].Text;
-            //        sName = lvFace.Items[i].SubItems[1].Text;
-            //        sPassword = lvFace.Items[i].SubItems[2].Text;
-            //        iPrivilege = Convert.ToInt32(lvFace.Items[i].SubItems[3].Text);
-            //        iFaceIndex = Convert.ToInt32(lvFace.Items[i].SubItems[4].Text);
-            //        sTmpData = lvFace.Items[i].SubItems[5].Text;
-            //        iLength = Convert.ToInt32(lvFace.Items[i].SubItems[6].Text);
-            //        sEnabled = lvFace.Items[i].SubItems[7].Text;
-            //        if (sEnabled == "true")
-            //        {
-            //            bEnabled = true;
-            //        }
-            //        else
-            //        {
-            //            bEnabled = false;
-            //        }
+        //Upload users' face template(in strings)(For TFT screen IFace series devices only)
+        //Uploading the face templates in batches is not supported temporarily.
+        //private void btnUploadFace_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //        if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sUserID, sName, sPassword, iPrivilege, bEnabled))//face templates are part of users' information
-            //        {
-            //            axCZKEM1.SetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, sTmpData, iLength);//upload face templates information to the device
-            //        }
-            //        else
-            //        {
-            //            axCZKEM1.GetLastError(ref idwErrorCode);
-            //            MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //            Cursor = Cursors.Default;
-            //            axCZKEM1.EnableDevice(iMachineNumber, true);
-            //            return;
-            //        }
-            //    }
+        //    string sUserID = "";
+        //    string sName = "";
+        //    int iFaceIndex = 0;
+        //    string sTmpData = "";
+        //    int iLength = 0;
+        //    int iPrivilege = 0;
+        //    string sPassword = "";
+        //    string sEnabled = "";
+        //    bool bEnabled = false;
 
-            //    axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            //    Cursor = Cursors.Default;
-            //    axCZKEM1.EnableDevice(iMachineNumber, true);
-            //    MessageBox.Show("Successfully Upload the face templates, " + "total:" + lvFace.Items.Count.ToString(), "Success");
-            //}
+        //    Cursor = Cursors.WaitCursor;
+        //    axCZKEM1.EnableDevice(iMachineNumber, false);
+        //    for (int i = 0; i < lvFace.Items.Count; i++)
+        //    {
+        //        sUserID = lvFace.Items[i].SubItems[0].Text;
+        //        sName = lvFace.Items[i].SubItems[1].Text;
+        //        sPassword = lvFace.Items[i].SubItems[2].Text;
+        //        iPrivilege = Convert.ToInt32(lvFace.Items[i].SubItems[3].Text);
+        //        iFaceIndex = Convert.ToInt32(lvFace.Items[i].SubItems[4].Text);
+        //        sTmpData = lvFace.Items[i].SubItems[5].Text;
+        //        iLength = Convert.ToInt32(lvFace.Items[i].SubItems[6].Text);
+        //        sEnabled = lvFace.Items[i].SubItems[7].Text;
+        //        if (sEnabled == "true")
+        //        {
+        //            bEnabled = true;
+        //        }
+        //        else
+        //        {
+        //            bEnabled = false;
+        //        }
+
+        //        if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sUserID, sName, sPassword, iPrivilege, bEnabled))//face templates are part of users' information
+        //        {
+        //            axCZKEM1.SetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, sTmpData, iLength);//upload face templates information to the device
+        //        }
+        //        else
+        //        {
+        //            axCZKEM1.GetLastError(ref idwErrorCode);
+        //            MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //            Cursor = Cursors.Default;
+        //            axCZKEM1.EnableDevice(iMachineNumber, true);
+        //            return;
+        //        }
+        //    }
+
+        //    axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+        //    Cursor = Cursors.Default;
+        //    axCZKEM1.EnableDevice(iMachineNumber, true);
+        //    MessageBox.Show("Successfully Upload the face templates, " + "total:" + lvFace.Items.Count.ToString(), "Success");
+        //}
 
 
-            //Delete a certain user's face template according to its id
-            //private void btnDelUserFace_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
+        //Delete a certain user's face template according to its id
+        //private void btnDelUserFace_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
 
-            //    if (cbUserID3.Text.Trim() == "")
-            //    {
-            //        MessageBox.Show("Please input the UserID first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    if (cbUserID3.Text.Trim() == "")
+        //    {
+        //        MessageBox.Show("Please input the UserID first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //    string sUserID = cbUserID3.Text.Trim();
-            //    int iFaceIndex = 50;
+        //    string sUserID = cbUserID3.Text.Trim();
+        //    int iFaceIndex = 50;
 
-            //    Cursor = Cursors.WaitCursor;
-            //    if (axCZKEM1.DelUserFace(iMachineNumber, sUserID, iFaceIndex))
-            //    {
-            //        axCZKEM1.RefreshData(iMachineNumber);
-            //        MessageBox.Show("DelUserFace,UserID=" + sUserID, "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
-            //    Cursor = Cursors.Default;
+        //    Cursor = Cursors.WaitCursor;
+        //    if (axCZKEM1.DelUserFace(iMachineNumber, sUserID, iFaceIndex))
+        //    {
+        //        axCZKEM1.RefreshData(iMachineNumber);
+        //        MessageBox.Show("DelUserFace,UserID=" + sUserID, "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
+        //    Cursor = Cursors.Default;
 
-            //}
+        //}
 
-            //Download specified user's face template (in bytes array)    
-            //You can refer to the part of "Udisk data Management" to learn how to manage the user's binary template(Get or Set)
-            //private void btnGetUserFace_Click(object sender, EventArgs e)
-            //{
-            //    if (bIsConnected == false)
-            //    {
-            //        MessageBox.Show("Please connect the device first!", "Error");
-            //        return;
-            //    }
+        //Download specified user's face template (in bytes array)    
+        //You can refer to the part of "Udisk data Management" to learn how to manage the user's binary template(Get or Set)
+        //private void btnGetUserFace_Click(object sender, EventArgs e)
+        //{
+        //    if (bIsConnected == false)
+        //    {
+        //        MessageBox.Show("Please connect the device first!", "Error");
+        //        return;
+        //    }
 
-            //    if (cbUserID3.Text.Trim() == "")
-            //    {
-            //        MessageBox.Show("Please input the UserID first!", "Error");
-            //        return;
-            //    }
-            //    int idwErrorCode = 0;
+        //    if (cbUserID3.Text.Trim() == "")
+        //    {
+        //        MessageBox.Show("Please input the UserID first!", "Error");
+        //        return;
+        //    }
+        //    int idwErrorCode = 0;
 
-            //    string sUserID = cbUserID3.Text.Trim();
-            //    int iFaceIndex = 50;//the only possible parameter value
-            //    int iLength = 128 * 1024;//initialize the length(cannot be zero)
-            //    byte[] byTmpData = new byte[iLength];
+        //    string sUserID = cbUserID3.Text.Trim();
+        //    int iFaceIndex = 50;//the only possible parameter value
+        //    int iLength = 128 * 1024;//initialize the length(cannot be zero)
+        //    byte[] byTmpData = new byte[iLength];
 
-            //    Cursor = Cursors.WaitCursor;
-            //    axCZKEM1.EnableDevice(iMachineNumber, false);
+        //    Cursor = Cursors.WaitCursor;
+        //    axCZKEM1.EnableDevice(iMachineNumber, false);
 
-            //    if (axCZKEM1.GetUserFace(iMachineNumber, sUserID, iFaceIndex, ref byTmpData[0], ref iLength))
-            //    {
-            //        //Here you can manage the information of the face templates according to your request.(for example,you can sava them to the database)
-            //        MessageBox.Show("GetUserFace,the  length of the bytes array byTmpData is " + iLength.ToString(), "Success");
-            //    }
-            //    else
-            //    {
-            //        axCZKEM1.GetLastError(ref idwErrorCode);
-            //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-            //    }
+        //    if (axCZKEM1.GetUserFace(iMachineNumber, sUserID, iFaceIndex, ref byTmpData[0], ref iLength))
+        //    {
+        //        //Here you can manage the information of the face templates according to your request.(for example,you can sava them to the database)
+        //        MessageBox.Show("GetUserFace,the  length of the bytes array byTmpData is " + iLength.ToString(), "Success");
+        //    }
+        //    else
+        //    {
+        //        axCZKEM1.GetLastError(ref idwErrorCode);
+        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+        //    }
 
-            //    axCZKEM1.EnableDevice(iMachineNumber, true);
-            //    Cursor = Cursors.Default;
-            //}
+        //    axCZKEM1.EnableDevice(iMachineNumber, true);
+        //    Cursor = Cursors.Default;
+        //}
 
-            //add by Darcy on Nov.23 2009
-            //Add the existed userid to DropDownLists.
-            //bool bAddControl = true;
+        //add by Darcy on Nov.23 2009
+        //Add the existed userid to DropDownLists.
+        //bool bAddControl = true;
         //private void UserIDTimer_Tick(object sender, EventArgs e)
         //{
         //    if (bIsConnected == false)

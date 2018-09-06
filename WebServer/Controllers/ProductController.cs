@@ -46,7 +46,7 @@ namespace WebServer.Controllers
             WebServer.WebApiApplication.users[index].btnDownloadUserInfo_Click();
             return Ok(0);
         }
-
+        [HttpPost]
         public IHttpActionResult PostUserInfo(string id)
         {
             if (id == null)
@@ -62,6 +62,7 @@ namespace WebServer.Controllers
             WebServer.WebApiApplication.users[index].btnUploadUserInfo_Click();
             return Ok(0);
         }
+        [HttpPost]
         public IHttpActionResult PostBatchUserInfo(string id)
         {
             if (id == null)
@@ -98,6 +99,18 @@ namespace WebServer.Controllers
                 return Ok(0);
             }
             WebServer.WebApiApplication.users[id].btnGetGeneralLogData_Click(t1,t2);
+            return Ok(0);
+        }
+        [HttpPost]
+        public IHttpActionResult DeleteAttLogs(string id)
+        {
+            int index = Convert.ToInt32(id);
+            if (index >= WebServer.WebApiApplication.users.Length)
+            {
+                System.Diagnostics.Debug.WriteLine("has no machine number");
+                return Ok(-1);
+            }
+            WebServer.WebApiApplication.users[index].btnClearGLog_Click();
             return Ok(0);
         }
     }
