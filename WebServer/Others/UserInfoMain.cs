@@ -321,11 +321,11 @@ namespace UserInfo
             System.Diagnostics.Debug.WriteLine("Successfully Upload fingerprint templates, " + "total:" + "Success");
         }
 
-        public void btnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {
+        public string btnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {
             if (bIsConnected == false)
             {
                 System.Console.Write("Please connect the device first!", "Error");
-                return;
+                return "[]";
             }
             string sdwEnrollNumber = "";
             int idwVerifyMode;
@@ -338,11 +338,11 @@ namespace UserInfo
             int idwSecond;
             int idwWorkcode = 0;
             int idwErrorCode = 0;
-            string url = "http://10.4.32.248:8500/api/sw_version";
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
+            //string url = "http://10.4.32.248:8500/api/sw_version";
+            //HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            //request.Method = "POST";
+            //request.ContentType = "application/json";
+            //request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
             string data = "[";
             string S = "";
             S = "工号,验证方式,考勤状态,考勤时间,工作号,机器号\r\n";
@@ -383,27 +383,26 @@ namespace UserInfo
                 if (data.Length > 1)
                 {
                     data = data.Substring(0, (data.Length - 1));
-                }
-                data += "]";
-                try
-                {
-                    byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
-                    request.ContentLength = byteData.Length;
-                    using (Stream postStream = request.GetRequestStream())
-                    {
-                        postStream.Write(byteData, 0, byteData.Length);
-                    }
+                }    
+                //try
+                //{
+                //    byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
+                //    request.ContentLength = byteData.Length;
+                //    using (Stream postStream = request.GetRequestStream())
+                //    {
+                //        postStream.Write(byteData, 0, byteData.Length);
+                //    }
 
-                    using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-                    {
-                        StreamReader reader = new StreamReader(response.GetResponseStream());
-                        System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
-                    }
-                }
-                    catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
-                }
+                //    using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                //    {
+                //        StreamReader reader = new StreamReader(response.GetResponseStream());
+                //        System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
+                //    }
+                //}
+                //    catch (Exception ex)
+                //{
+                //    System.Diagnostics.Debug.WriteLine(ex.Message);
+                //}
             }
             else
             {
@@ -417,9 +416,11 @@ namespace UserInfo
                     System.Console.Write("No data from terminal returns!", "Error");
                 }
             }
+            data += "]";
             sw.Close();
             fs.Close(); 
             axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
+            return data;
         }
         //Clear all attendance records from terminal
         public void btnClearGLog_Click()

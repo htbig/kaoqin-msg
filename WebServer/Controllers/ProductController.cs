@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Text;
 using UserInfo;
 using WebServer;
 
@@ -79,7 +80,7 @@ namespace WebServer.Controllers
             return Ok(0);
         }
         [HttpPost]
-        public IHttpActionResult PostAttLogs(dynamic obj)
+        public HttpResponseMessage PostAttLogs(dynamic obj)
         {
             string begin_time = Convert.ToString(obj.begin_time);
             string end_time = Convert.ToString(obj.end_time);
@@ -87,7 +88,10 @@ namespace WebServer.Controllers
             if (id >= WebServer.WebApiApplication.users.Length)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
-                return Ok(-1);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("[]", Encoding.UTF8, "application/json"),
+                };
             }
             bool bCvtBTime = false, bCvtETime = false ;
             DateTime t1, t2;
@@ -96,10 +100,16 @@ namespace WebServer.Controllers
             if ((bCvtBTime ^ bCvtETime) == true || (bCvtBTime == true && (t2 < t1)))
             {
                 System.Diagnostics.Debug.WriteLine("bad parameter");
-                return Ok(0);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("[]", Encoding.UTF8, "application/json"),
+                };
             }
-            WebServer.WebApiApplication.users[id].btnGetGeneralLogData_Click(t1,t2);
-            return Ok(0);
+            string data = WebServer.WebApiApplication.users[id].btnGetGeneralLogData_Click(t1,t2);
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent(data, Encoding.UTF8, "application/json"),
+            };
         }
         [HttpPost]
         public IHttpActionResult DeleteAttLogs(string id)
