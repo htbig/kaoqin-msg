@@ -19,12 +19,13 @@ namespace UserInfo
     {
         public UserInfoMain(int machieNumber)
         {
-            iNumber = machieNumber;
+            iMachineNumber = machieNumber;
             //InitializeComponent();
         }
-
+        public static string[] names = { "name1", "name2" };
         //Create Standalone SDK class dynamicly.
         public zkemkeeper.CZKEMClass axCZKEM1 = new zkemkeeper.CZKEMClass();
+        private string logPath = "C:\\ustar\\WebServer\\";
 
         /*************************************************************************************************
         * Before you refer to this demo,we strongly suggest you read the development manual deeply first.*
@@ -32,8 +33,7 @@ namespace UserInfo
         * ************************************************************************************************/
         #region Communication
         private bool bIsConnected = false;//the boolean value identifies whether the device is connected
-        private int iMachineNumber = 1;//the serial number of the device.After connecting the device ,this value will be changed.
-        private int iNumber; //Identification different machie
+        private int iMachineNumber;//the serial number of the device.After connecting the device ,this value will be changed.
         private Thread trigger_t;
         private void tfn_trigger()
         {
@@ -55,7 +55,7 @@ namespace UserInfo
             bIsConnected = axCZKEM1.Connect_Net(ip_addr, 4370);
             if (bIsConnected == true)
             {              
-                iMachineNumber = 1;//In fact,when you are using the tcp/ip communication,this parameter will be ignored,that is any integer will all right.Here we use 1.
+                //iMachineNumber = 1;//In fact,when you are using the tcp/ip communication,this parameter will be ignored,that is any integer will all right.Here we use 1.
                 if (axCZKEM1.RegEvent(iMachineNumber, 65535))
                 {//Here you can register the realtime events that you want to be triggered(the parameters 65535 means registering all)
                     //this.axCZKEM1.OnFinger += new zkemkeeper._IZKEMEvents_OnFingerEventHandler(axCZKEM1_OnAttTransactionEx);
@@ -116,7 +116,7 @@ namespace UserInfo
             string sCardnumber = "";
             string S = "";
             S = "工号," + "姓名," + "指纹索引," + "指纹序列," + "等级," + "密码," + "使能," + "标记," + "人脸索引," + "人脸序列," + "人脸字节数," + "卡号";
-            FileStream fs = new FileStream("C:\\ustar\\WebServer\\userInfo-"+ iNumber.ToString()+".csv", FileMode.OpenOrCreate);
+            FileStream fs = new FileStream(logPath +"userInfo.csv", FileMode.OpenOrCreate);
             StreamWriter sw = new StreamWriter(fs);
             sw.WriteLine(S);
             bool bHasFg = false;
@@ -184,7 +184,7 @@ namespace UserInfo
             string sTmpFaceData = "";
             int iTmpLength = 0;
             string[] sArray;
-            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo-" + iNumber.ToString() + ".csv");
+            StreamReader objReader = new StreamReader(logPath + "userInfo.csv");
             string sLine = "";
             sLine = objReader.ReadLine();
             sLine = objReader.ReadLine();
@@ -245,6 +245,7 @@ namespace UserInfo
                     sLine = objReader.ReadLine();
                 }
             }
+            objReader.Close();
             axCZKEM1.BatchUpdate(iMachineNumber);//upload all the information in the memory
             axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
             axCZKEM1.EnableDevice(iMachineNumber, true);
@@ -277,7 +278,7 @@ namespace UserInfo
             string sTmpFaceData="";
             int iTmpLength = 0;
             string[] sArray;
-            StreamReader objReader = new StreamReader("C:\\ustar\\WebServer\\userInfo-" + iNumber.ToString() + ".csv");
+            StreamReader objReader = new StreamReader(logPath + "userInfo.csv");
             string sLine = "";
             sLine = objReader.ReadLine();
             sLine = objReader.ReadLine();
@@ -346,7 +347,7 @@ namespace UserInfo
             string data = "[";
             string S = "";
             S = "工号,验证方式,考勤状态,考勤时间,工作号,机器号\r\n";
-            FileStream fs = new FileStream("C:\\ustar\\WebServer\\attLog-" + iNumber.ToString() + ".csv", FileMode.OpenOrCreate);
+            FileStream fs = new FileStream(logPath + "attLog-" + iMachineNumber.ToString() + ".csv", FileMode.OpenOrCreate);
             StreamWriter sw = new StreamWriter(fs);
             sw.Write(S);
             axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
@@ -359,10 +360,10 @@ namespace UserInfo
                     + idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
                     sw.WriteLine(S);
                     if (start_time == DateTime.MinValue) { 
-                        data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sEnrollNumber\":" + sdwEnrollNumber +
+                        data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":" + sdwEnrollNumber +
                             ",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
-                            idwVerifyMode.ToString() +
+                            idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
                             "},";
                     }else
                     {
@@ -372,10 +373,10 @@ namespace UserInfo
                         DateTime.TryParse(logTime, out logDateTime);
                         if (logDateTime > start_time && logDateTime < end_time)
                         {
-                            data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sEnrollNumber\":" + sdwEnrollNumber +
+                            data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":" + sdwEnrollNumber +
                             ",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
-                            idwVerifyMode.ToString() +
+                            idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
                             "},";
                         }
                     }
@@ -827,7 +828,7 @@ namespace UserInfo
             request.Method = "POST";
             request.ContentType = "application/json";
             request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
-            string data = "{\"iMachineNumber\":"+ iMachineNumber.ToString()+ ",\"sEnrollNumber\":"+sEnrollNumber +
+            string data = "{\"iMachineNumber\":"+ iMachineNumber.ToString()+ ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":"+sEnrollNumber +
                 ",\"Time\":\""+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
                 iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString()+ "\",\"VerifyMode\":"+
                 iVerifyMethod.ToString()+ ",\"AttState\":"+iAttState.ToString()+ ",\"isInvalid\":"+ iIsInValid.ToString()+
@@ -852,9 +853,9 @@ namespace UserInfo
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                FileStream fs = new FileStream("C:\\ustar\\WebServer\\verifyError-" + iNumber.ToString() + ".log", FileMode.Append);
+                FileStream fs = new FileStream(logPath + "verifyError-" + iMachineNumber.ToString() + ".log", FileMode.Append);
                 StreamWriter sw = new StreamWriter(fs);
-                string S = data + " failed to send to:" + ex.InnerException.Message; 
+                string S = data + " failed to send to:" + ex.Message; 
                 sw.WriteLine(S);
                 sw.Close();
                 fs.Close();

@@ -39,12 +39,12 @@ namespace WebServer.Controllers
                 id = "1";
             }
             int index = int.Parse(id);
-            if (index >= WebServer.WebApiApplication.users.Length )
+            if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return Ok(-1);
             }
-            WebServer.WebApiApplication.users[index].btnDownloadUserInfo_Click();
+            WebServer.WebApiApplication.users[index-1].btnDownloadUserInfo_Click();
             return Ok(0);
         }
         [HttpPost]
@@ -55,12 +55,12 @@ namespace WebServer.Controllers
                 id = "1";
             }
             int index = int.Parse(id);
-            if (index >= WebServer.WebApiApplication.users.Length)
+            if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return Ok(-1);
             }
-            WebServer.WebApiApplication.users[index].btnUploadUserInfo_Click();
+            WebServer.WebApiApplication.users[index-1].btnUploadUserInfo_Click();
             return Ok(0);
         }
         [HttpPost]
@@ -71,12 +71,12 @@ namespace WebServer.Controllers
                 id = "1";
             }
             int index = int.Parse(id);
-            if (index >= WebServer.WebApiApplication.users.Length)
+            if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return Ok(-1);
             }
-            WebServer.WebApiApplication.users[index].btnBatchUpdate_Click();
+            WebServer.WebApiApplication.users[index-1].btnBatchUpdate_Click();
             return Ok(0);
         }
         [HttpPost]
@@ -85,7 +85,7 @@ namespace WebServer.Controllers
             string begin_time = Convert.ToString(obj.begin_time);
             string end_time = Convert.ToString(obj.end_time);
             int id = Convert.ToInt32(obj.id);
-            if (id >= WebServer.WebApiApplication.users.Length)
+            if (id > WebServer.WebApiApplication.users.Length || id < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return new HttpResponseMessage()
@@ -105,7 +105,7 @@ namespace WebServer.Controllers
                     Content = new StringContent("[]", Encoding.UTF8, "application/json"),
                 };
             }
-            string data = WebServer.WebApiApplication.users[id].btnGetGeneralLogData_Click(t1,t2);
+            string data = WebServer.WebApiApplication.users[id-1].btnGetGeneralLogData_Click(t1,t2);
             return new HttpResponseMessage()
             {
                 Content = new StringContent(data, Encoding.UTF8, "application/json"),
@@ -114,13 +114,17 @@ namespace WebServer.Controllers
         [HttpPost]
         public IHttpActionResult DeleteAttLogs(string id)
         {
+            if (id == null)
+            {
+                id = "1";
+            }
             int index = Convert.ToInt32(id);
-            if (index >= WebServer.WebApiApplication.users.Length)
+            if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return Ok(-1);
             }
-            WebServer.WebApiApplication.users[index].btnClearGLog_Click();
+            WebServer.WebApiApplication.users[index-1].btnClearGLog_Click();
             return Ok(0);
         }
     }
