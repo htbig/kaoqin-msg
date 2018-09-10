@@ -25,7 +25,7 @@ namespace UserInfo
         public static string[] names = { "name1", "name2" };
         //Create Standalone SDK class dynamicly.
         public zkemkeeper.CZKEMClass axCZKEM1 = new zkemkeeper.CZKEMClass();
-        private string logPath = "C:\\ustar\\WebServer\\";
+        private string logPath = "D:\\kaoqin\\WebServer\\";/*"C:\\ustar\\WebServer\\";*/
 
         /*************************************************************************************************
         * Before you refer to this demo,we strongly suggest you read the development manual deeply first.*
@@ -823,16 +823,19 @@ namespace UserInfo
         //If your fingerprint(or your card or face) passes the verification,this event will be triggered
         private void axCZKEM1_OnAttTransactionEx(string sEnrollNumber, int iIsInValid, int iAttState, int iVerifyMethod, int iYear, int iMonth, int iDay, int iHour, int iMinute, int iSecond, int iWorkCode)
         {
-            string url = "http://10.4.32.248:8500/api/sw_version";
+            string url = "http://vegstore.utstar.com.cn:8081/send_msg"; /*"http://10.4.32.248:8500/api/sw_version"*/
             HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
-            string data = "{\"iMachineNumber\":"+ iMachineNumber.ToString()+ ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":"+sEnrollNumber +
-                ",\"Time\":\""+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
-                iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString()+ "\",\"VerifyMode\":"+
-                iVerifyMethod.ToString()+ ",\"AttState\":"+iAttState.ToString()+ ",\"isInvalid\":"+ iIsInValid.ToString()+
-                "}";           
+            //request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
+            //string data = "{\"iMachineNumber\":"+ iMachineNumber.ToString()+ ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":"+sEnrollNumber +
+            //    ",\"Time\":\""+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
+            //    iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString()+ "\",\"VerifyMode\":"+
+            //    iVerifyMethod.ToString()+ ",\"AttState\":"+iAttState.ToString()+ ",\"isInvalid\":"+ iIsInValid.ToString()+
+            //    "}";
+            string data = "{\"command\":\"send_msg\", \"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbAbdOiJIUzI1NiJ9.eyJ1c2VyIUiiSFowMzg4MSJ9.iC29yeuDdd8YwtCk_ix2EZ1gBTNlxa3c5YPhCYUA2a\", \"userlist\":\""+sEnrollNumber+"\"," +
+                "\"agentid\":13,\"text\":\"时间:"+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
+                iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString() +"\"}";
             byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
             request.ContentLength = byteData.Length;
             try
@@ -845,7 +848,6 @@ namespace UserInfo
                 using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
                     StreamReader reader = new StreamReader(response.GetResponseStream());
-                    System.Diagnostics.Debug.WriteLine("hello world");
                     System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
                 }
 
