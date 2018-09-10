@@ -362,8 +362,8 @@ namespace UserInfo
                     + idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
                     sw.WriteLine(S);
                     if (start_time == DateTime.MinValue) { 
-                        data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":" + sdwEnrollNumber +
-                            ",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                        data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
+                            "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
                             idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
                             "},";
@@ -375,8 +375,8 @@ namespace UserInfo
                         DateTime.TryParse(logTime, out logDateTime);
                         if (logDateTime > start_time && logDateTime < end_time)
                         {
-                            data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":" + sdwEnrollNumber +
-                            ",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                            data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
+                            "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
                             idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
                             "},";
