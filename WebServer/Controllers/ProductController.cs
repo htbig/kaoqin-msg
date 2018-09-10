@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Text;
+using System.Threading.Tasks;
 using UserInfo;
 using WebServer;
 
@@ -32,7 +33,13 @@ namespace WebServer.Controllers
             }
             return Ok(product);
         }
-        public IHttpActionResult GetUserInfo(string id)
+        private int downLoadUserInfoTask(object index)
+        {
+            int id = Convert.ToInt32(index);
+            WebServer.WebApiApplication.users[id-1].btnDownloadUserInfo_Click();
+            return 1;
+        }
+        public async Task GetUserInfo(string id)
         {          
             if (id == null)
             {
@@ -42,13 +49,19 @@ namespace WebServer.Controllers
             if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
-                return Ok(-1);
+                return;
             }
-            WebServer.WebApiApplication.users[index-1].btnDownloadUserInfo_Click();
-            return Ok(0);
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(downLoadUserInfoTask), index);
+            await task;
+        }
+        private int upLoadUserInfoTask(object index)
+        {
+            int id = Convert.ToInt32(index);
+            WebServer.WebApiApplication.users[id - 1].btnUploadUserInfo_Click();
+            return 1;
         }
         [HttpPost]
-        public IHttpActionResult PostUserInfo(string id)
+        public async Task PostUserInfo(string id)
         {
             if (id == null)
             {
@@ -58,13 +71,19 @@ namespace WebServer.Controllers
             if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
-                return Ok(-1);
+                return;
             }
-            WebServer.WebApiApplication.users[index-1].btnUploadUserInfo_Click();
-            return Ok(0);
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(upLoadUserInfoTask), index);
+            await task;
+        }
+        private int batchUpLoadUserInfoTask(object index)
+        {
+            int id = Convert.ToInt32(index);
+            WebServer.WebApiApplication.users[id - 1].btnBatchUpdate_Click();
+            return 1;
         }
         [HttpPost]
-        public IHttpActionResult PostBatchUserInfo(string id)
+        public async Task PostBatchUserInfo(string id)
         {
             if (id == null)
             {
@@ -74,10 +93,10 @@ namespace WebServer.Controllers
             if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
                 System.Diagnostics.Debug.WriteLine("has no machine number");
-                return Ok(-1);
+                return;
             }
-            WebServer.WebApiApplication.users[index-1].btnBatchUpdate_Click();
-            return Ok(0);
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(batchUpLoadUserInfoTask), index);
+            await task;
         }
         [HttpPost]
         public HttpResponseMessage PostAttLogs(dynamic obj)

@@ -22,7 +22,7 @@ namespace UserInfo
             iMachineNumber = machieNumber;
             //InitializeComponent();
         }
-        public static string[] names = { "name1", "name2" };
+        public static string[] names = { "name1", "name2", "name3", "name4", "name5", "name6", "name7", "name8" };
         //Create Standalone SDK class dynamicly.
         public zkemkeeper.CZKEMClass axCZKEM1 = new zkemkeeper.CZKEMClass();
         private string logPath = "D:\\kaoqin\\WebServer\\";/*"C:\\ustar\\WebServer\\";*/
