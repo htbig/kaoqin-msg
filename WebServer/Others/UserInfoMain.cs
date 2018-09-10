@@ -219,7 +219,9 @@ namespace UserInfo
                     //sCardnumber = long.Parse(sArray[11]);
                     if (sdwEnrollNumber != sLastEnrollNumber)
                     {
-                        axCZKEM1.SetStrCardNumber(sArray[11]); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
+                        string hexString = sArray[11]; ;
+                        int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+                        axCZKEM1.SetStrCardNumber(num.ToString()); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
                         if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sdwEnrollNumber, sName, sPassword, iPrivilege, bEnabled))
                         {//upload user information to the device
                             axCZKEM1.SetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, iFlag, sTmpData);// upload templates information to the device
