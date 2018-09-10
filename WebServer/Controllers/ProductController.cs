@@ -39,7 +39,12 @@ namespace WebServer.Controllers
             WebServer.WebApiApplication.users[id-1].btnDownloadUserInfo_Click();
             return 1;
         }
-        public async Task GetUserInfo(string id)
+        async Task AsyncGetUserInfo(int index)
+        {
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(downLoadUserInfoTask), index);
+            await task;
+        }
+        public /*async*/ void GetUserInfo(string id)
         {          
             if (id == null)
             {
@@ -51,8 +56,9 @@ namespace WebServer.Controllers
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return;
             }
-            var task = Task<int>.Factory.StartNew(new Func<object, int>(downLoadUserInfoTask), index);
-            await task;
+            //var task = Task<int>.Factory.StartNew(new Func<object, int>(downLoadUserInfoTask), index);
+            //await task;
+            AsyncGetUserInfo(index);
         }
         private int upLoadUserInfoTask(object index)
         {
@@ -82,8 +88,14 @@ namespace WebServer.Controllers
             WebServer.WebApiApplication.users[id - 1].btnBatchUpdate_Click();
             return 1;
         }
+        async Task AsyncBatchUserInfo(int index)
+        {
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(batchUpLoadUserInfoTask), index);
+            await task;
+        }
+        
         [HttpPost]
-        public async Task PostBatchUserInfo(string id)
+        public void PostBatchUserInfo(string id)
         {
             if (id == null)
             {
@@ -95,8 +107,7 @@ namespace WebServer.Controllers
                 System.Diagnostics.Debug.WriteLine("has no machine number");
                 return;
             }
-            var task = Task<int>.Factory.StartNew(new Func<object, int>(batchUpLoadUserInfoTask), index);
-            await task;
+            AsyncBatchUserInfo(index);
         }
         [HttpPost]
         public HttpResponseMessage PostAttLogs(dynamic obj)
