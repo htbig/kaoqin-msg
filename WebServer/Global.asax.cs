@@ -9,7 +9,7 @@ namespace WebServer
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
-        public static UserInfoMain[] users = new UserInfoMain[2];
+        public static UserInfoMain[] users = new UserInfoMain[8];
         public static string[] ips = { "172.20.96.55",//for test
             "172.21.80.67", //新租办公区
             "172.21.76.68", //前台

@@ -39,9 +39,11 @@ namespace UserInfo
         {
             while (bIsConnected == true)
             {
-                if (axCZKEM1.ReadRTLog(iMachineNumber))
-                {
-                    while (axCZKEM1.GetRTLog(iMachineNumber)) ;
+                lock (axCZKEM1) {
+                    if (axCZKEM1.ReadRTLog(iMachineNumber))
+                    {
+                        while (axCZKEM1.GetRTLog(iMachineNumber)) ;
+                    }
                 }
             }
         }
@@ -355,56 +357,61 @@ namespace UserInfo
             //StreamWriter sw = new StreamWriter(fs);
             //sw.Write(S);
             axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
-            if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
-            {// read all the attendance records to the memory
-                //get records from the memory
-                while (axCZKEM1.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode, out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))
-                {
-                    //S = sdwEnrollNumber + "," + idwVerifyMode.ToString() + "," + idwInOutMode.ToString() + "," + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " "
-                    //+ idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
-                    //sw.WriteLine(S);
-                    if (start_time == DateTime.MinValue) { 
-                        data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
-                            "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
-                            idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
-                            idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
-                            "},";
-                    }else
+            lock (axCZKEM1)
+            {
+                if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
+                {// read all the attendance records to the memory
+                 //get records from the memory
+                    while (axCZKEM1.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode, out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))
                     {
-                        string logTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
-                            idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
-                        DateTime logDateTime;
-                        DateTime.TryParse(logTime, out logDateTime);
-                        if (logDateTime > start_time && logDateTime < end_time)
+                        //S = sdwEnrollNumber + "," + idwVerifyMode.ToString() + "," + idwInOutMode.ToString() + "," + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " "
+                        //+ idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
+                        //sw.WriteLine(S);
+                        if (start_time == DateTime.MinValue)
                         {
                             data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
-                            "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
-                            idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
-                            idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
-                            "},";
+                                "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                                idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
+                                idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
+                                "},";
+                        }
+                        else
+                        {
+                            string logTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                                idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
+                            DateTime logDateTime;
+                            DateTime.TryParse(logTime, out logDateTime);
+                            if (logDateTime > start_time && logDateTime < end_time)
+                            {
+                                data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
+                                "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                                idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "\",\"VerifyMode\":" +
+                                idwVerifyMode.ToString() + ",\"AttState\":" + idwInOutMode.ToString() +
+                                "},";
+                            }
                         }
                     }
-                }
-                if (data.Length > 1)
-                {
-                    data = data.Substring(0, (data.Length - 1));
-                }    
-            }
-            else
-            {
-                axCZKEM1.GetLastError(idwErrorCode);
-                if (idwErrorCode != 0)
-                {
-                    System.Console.Write("Reading data from terminal failed,ErrorCode: %d", idwErrorCode);
+                    if (data.Length > 1)
+                    {
+                        data = data.Substring(0, (data.Length - 1));
+                    }
                 }
                 else
                 {
-                    System.Console.Write("No data from terminal returns!", "Error");
+                    axCZKEM1.GetLastError(idwErrorCode);
+                    if (idwErrorCode != 0)
+                    {
+                        System.Console.Write("Reading data from terminal failed,ErrorCode: %d", idwErrorCode);
+                    }
+                    else
+                    {
+                        System.Console.Write("No data from terminal returns!", "Error");
+                    }
                 }
+                data += "]";
+                //sw.Close();
+                //fs.Close(); 
             }
-            data += "]";
-            //sw.Close();
-            //fs.Close(); 
             axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
             return data;
         }
