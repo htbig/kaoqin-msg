@@ -9,20 +9,17 @@ namespace WebServer
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
-        public static UserInfoMain[] users = new UserInfoMain[1];
-        public static string[] ips = { "172.21.30.16",//for test
-            "172.21.76.10",
-            "172.21.76.11",
-            "172.21.76.12",
-            //"172.21.76.13",//reserved
-            "172.21.80.10",
-            "172.21.80.11",
-            "172.21.80.12",
-            //"172.21.80.13",//reserved
-            "172.21.96.10",
-            "172.21.96.11",
-            //"172.21.96.12",//reserved
-            //"172.21.96.13"//reserved
+        public static UserInfoMain[] users = new UserInfoMain[2];
+        public static string[] ips = { "172.20.96.55",//for test
+            "172.21.80.67", //新租办公区
+            "172.21.76.68", //前台
+            "172.21.76.69", //研发大办公室门口
+            "172.21.76.71", //洗手间门口
+            "172.21.76.72", //货梯门口
+            "172.21.80.66", //采购            
+            "172.21.96.64", //生产
+            "172.21.96.65" //生产
+         
         };
 
         protected void Application_Start()

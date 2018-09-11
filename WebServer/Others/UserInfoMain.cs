@@ -22,7 +22,7 @@ namespace UserInfo
             iMachineNumber = machieNumber;
             //InitializeComponent();
         }
-        public static string[] names = { "name1", "name2", "name3", "name4", "name5", "name6", "name7", "name8" };
+        public static string[] names = { "前台", "研发大办公室门口", "洗手间门口", "货梯门口", "采购", "新租办公区", "生产", "生产" };
         //Create Standalone SDK class dynamicly.
         public zkemkeeper.CZKEMClass axCZKEM1 = new zkemkeeper.CZKEMClass();
         private string logPath = "D:\\kaoqin\\WebServer\\";/*"C:\\ustar\\WebServer\\";*/
@@ -354,7 +354,7 @@ namespace UserInfo
             //FileStream fs = new FileStream(logPath + "attLog-" + iMachineNumber.ToString() + ".csv", FileMode.OpenOrCreate);
             //StreamWriter sw = new StreamWriter(fs);
             //sw.Write(S);
-            //axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
+            axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
             if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
             {// read all the attendance records to the memory
                 //get records from the memory
@@ -405,7 +405,7 @@ namespace UserInfo
             data += "]";
             //sw.Close();
             //fs.Close(); 
-            //axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
+            axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
             return data;
         }
         //Clear all attendance records from terminal
@@ -835,7 +835,7 @@ namespace UserInfo
             }
             string data = "{\"command\":\"send_msg\", \"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbAbdOiJIUzI1NiJ9.eyJ1c2VyIUiiSFowMzg4MSJ9.iC29yeuDdd8YwtCk_ix2EZ1gBTNlxa3c5YPhCYUA2a\", \"userlist\":\""+sEnrollNumber+"\"," +
                 "\"agentid\":13,\"text\":\"时间:"+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
-                iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString() +"\"}";
+                iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString() +"，地址:"+ names[iMachineNumber - 1]+"\"}";
             byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
             request.ContentLength = byteData.Length;
             try
