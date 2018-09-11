@@ -349,20 +349,20 @@ namespace UserInfo
             //request.ContentType = "application/json";
             //request.Headers.Add("Authorization", "Basic YXBpOlkycGpjMnhvY0N4b2MyMTVaMk56");
             string data = "[";
-            string S = "";
-            S = "工号,验证方式,考勤状态,考勤时间,工作号,机器号\r\n";
-            FileStream fs = new FileStream(logPath + "attLog-" + iMachineNumber.ToString() + ".csv", FileMode.OpenOrCreate);
-            StreamWriter sw = new StreamWriter(fs);
-            sw.Write(S);
-            axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
+            //string S = "";
+            //S = "工号,验证方式,考勤状态,考勤时间,工作号,机器号\r\n";
+            //FileStream fs = new FileStream(logPath + "attLog-" + iMachineNumber.ToString() + ".csv", FileMode.OpenOrCreate);
+            //StreamWriter sw = new StreamWriter(fs);
+            //sw.Write(S);
+            //axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
             if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
             {// read all the attendance records to the memory
                 //get records from the memory
                 while (axCZKEM1.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode, out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))
                 {
-                    S = sdwEnrollNumber + "," + idwVerifyMode.ToString() + "," + idwInOutMode.ToString() + "," + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " "
-                    + idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
-                    sw.WriteLine(S);
+                    //S = sdwEnrollNumber + "," + idwVerifyMode.ToString() + "," + idwInOutMode.ToString() + "," + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " "
+                    //+ idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
+                    //sw.WriteLine(S);
                     if (start_time == DateTime.MinValue) { 
                         data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber-1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
                             "\",\"Time\":\"" + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
@@ -389,25 +389,6 @@ namespace UserInfo
                 {
                     data = data.Substring(0, (data.Length - 1));
                 }    
-                //try
-                //{
-                //    byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
-                //    request.ContentLength = byteData.Length;
-                //    using (Stream postStream = request.GetRequestStream())
-                //    {
-                //        postStream.Write(byteData, 0, byteData.Length);
-                //    }
-
-                //    using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-                //    {
-                //        StreamReader reader = new StreamReader(response.GetResponseStream());
-                //        System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
-                //    }
-                //}
-                //    catch (Exception ex)
-                //{
-                //    System.Diagnostics.Debug.WriteLine(ex.Message);
-                //}
             }
             else
             {
@@ -422,9 +403,9 @@ namespace UserInfo
                 }
             }
             data += "]";
-            sw.Close();
-            fs.Close(); 
-            axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
+            //sw.Close();
+            //fs.Close(); 
+            //axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
             return data;
         }
         //Clear all attendance records from terminal
@@ -837,6 +818,21 @@ namespace UserInfo
             //    iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString()+ "\",\"VerifyMode\":"+
             //    iVerifyMethod.ToString()+ ",\"AttState\":"+iAttState.ToString()+ ",\"isInvalid\":"+ iIsInValid.ToString()+
             //    "}";
+            string logTime = iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
+                            iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString();
+            DateTime logDateTime;
+            DateTime.TryParse(logTime, out logDateTime);
+            int idwYear=0, idwMonth=0, idwDay=0, idwHour=0, idwMinute=0, idwSecond=0;
+            axCZKEM1.GetDeviceTime(iMachineNumber, ref idwYear, ref idwMonth, ref idwDay, ref idwHour, ref idwMinute, ref idwSecond);
+            string machieTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                            idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
+            DateTime machineDateTime;
+            DateTime.TryParse(machieTime, out machineDateTime);
+            int i = Convert.ToInt32((machineDateTime - logDateTime).TotalSeconds);
+            if (i > 4)
+            {
+                return;
+            }
             string data = "{\"command\":\"send_msg\", \"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbAbdOiJIUzI1NiJ9.eyJ1c2VyIUiiSFowMzg4MSJ9.iC29yeuDdd8YwtCk_ix2EZ1gBTNlxa3c5YPhCYUA2a\", \"userlist\":\""+sEnrollNumber+"\"," +
                 "\"agentid\":13,\"text\":\"时间:"+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
                 iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString() +"\"}";
