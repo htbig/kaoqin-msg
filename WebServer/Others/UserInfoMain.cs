@@ -22,7 +22,7 @@ namespace UserInfo
             iMachineNumber = machieNumber;
             //InitializeComponent();
         }
-        public static string[] names = { "前台", "研发大办公室门口", "洗手间门口", "货梯门口", "采购", "新租办公区", "生产", "生产" };
+        public static string[] names = {"测试", "前台", "研发大办公室门口", "洗手间门口", "货梯门口", "采购", "新租办公区", "生产", "生产" };
         //Create Standalone SDK class dynamicly.
         public zkemkeeper.CZKEMClass axCZKEM1 = new zkemkeeper.CZKEMClass();
         private string logPath = "D:\\kaoqin\\WebServer\\";/*"C:\\ustar\\WebServer\\";*/
@@ -136,8 +136,10 @@ namespace UserInfo
                         S = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
                     }
                 }
-                if (axCZKEM1.GetUserFaceStr(iMachineNumber, sdwEnrollNumber, iFaceIndex, sTmpFaceData, iFaceLength)) {// 'get the face templates from the memory
-                    if (bHasFg == false) {
+                if (axCZKEM1.GetUserFaceStr(iMachineNumber, sdwEnrollNumber, iFaceIndex, sTmpFaceData, iFaceLength))
+                {// 'get the face templates from the memory
+                    if (bHasFg == false)
+                    {
                         S = sdwEnrollNumber + "," + sName + "," + "" + "," + "" + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
                     }
                     S = S + "," + iFaceIndex + "," + sTmpFaceData + "," + iFaceLength;
@@ -149,7 +151,9 @@ namespace UserInfo
                     } else if (bHasFc == false) {
                         S = S + "," + "" + "," + "" + "," + "";
                     }
-                    S = S + "," + sCardnumber;
+                    long lNumber = Convert.ToInt64 (sCardnumber);
+                    string sHexNumner = Convert.ToString(lNumber, 16);
+                    S = S + "," + sHexNumner;
                  }
                 sw.WriteLine(S);
                 bHasFg = false;
@@ -356,9 +360,10 @@ namespace UserInfo
             //FileStream fs = new FileStream(logPath + "attLog-" + iMachineNumber.ToString() + ".csv", FileMode.OpenOrCreate);
             //StreamWriter sw = new StreamWriter(fs);
             //sw.Write(S);
-            axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device
+ 
             lock (axCZKEM1)
             {
+                axCZKEM1.EnableDevice(iMachineNumber, false);// disable the device,if return value is false,it means the machine has disconnectted,need reconnect 
                 if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
                 {// read all the attendance records to the memory
                  //get records from the memory
@@ -411,8 +416,8 @@ namespace UserInfo
                 data += "]";
                 //sw.Close();
                 //fs.Close(); 
+                axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
             }
-            axCZKEM1.EnableDevice(iMachineNumber, true);// enable the device
             return data;
         }
         //Clear all attendance records from terminal
