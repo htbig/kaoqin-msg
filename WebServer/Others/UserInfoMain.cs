@@ -12,7 +12,7 @@ using System.IO;
 using System.Net;
 
 using System.Threading;
-
+using WebServer;
 namespace UserInfo
 {
     public partial class UserInfoMain
@@ -35,16 +35,37 @@ namespace UserInfo
         private bool bIsConnected = false;//the boolean value identifies whether the device is connected
         private int iMachineNumber;//the serial number of the device.After connecting the device ,this value will be changed.
         private Thread trigger_t;
+        private Thread check_online;
+
         private void tfn_trigger()
         {
             while (bIsConnected == true)
             {
-                lock (axCZKEM1) {
+                lock (axCZKEM1)
+                {
                     if (axCZKEM1.ReadRTLog(iMachineNumber))
                     {
                         while (axCZKEM1.GetRTLog(iMachineNumber)) ;
                     }
                 }
+                Thread.Sleep(1000);
+            }
+        }
+        private void tfn_check_online()
+        {
+            while (true)
+            {
+                lock (axCZKEM1)
+                {
+                    if ((false == axCZKEM1.EnableDevice(iMachineNumber, false)) || (bIsConnected == false))// disable the device,if return value is false,it means the machine has disconnectted,need reconnect 
+                    {
+                        axCZKEM1.Disconnect();
+                        bIsConnected = false;
+                        btnConnect_Click(WebServer.WebApiApplication.ips[iMachineNumber - 1]);
+                    }
+
+                }
+                Thread.Sleep(30000);
             }
         }
         //If your device supports the TCP/IP communications, you can refer to this.
@@ -53,7 +74,7 @@ namespace UserInfo
         {            
             int idwErrorCode = 0;
 
-            axCZKEM1.PullMode = 1;
+            axCZKEM1.PullMode = 1;            
             bIsConnected = axCZKEM1.Connect_Net(ip_addr, 4370);
             if (bIsConnected == true)
             {              
@@ -68,10 +89,11 @@ namespace UserInfo
                     //this.axCZKEM1.OnDeleteTemplate += new zkemkeeper._IZKEMEvents_OnDeleteTemplateEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnNewUser += new zkemkeeper._IZKEMEvents_OnNewUserEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnHIDNum += new zkemkeeper._IZKEMEvents_OnHIDNumEventHandler(axCZKEM1_OnAttTransactionEx);
-                    //this.axCZKEM1.OnAlarm += new zkemkeeper._IZKEMEvents_OnAlarmEventHandler(axCZKEM1_OnAttTransactionEx);
+                    //this.axCZKEM1.OnAlarm += new zkemkeeper._IZKEMEvents_OnAlarmEventHandler(axCZKEM1_OnAlarm);
                     //this.axCZKEM1.OnDoor += new zkemkeeper._IZKEMEvents_OnDoorEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnWriteCard += new zkemkeeper._IZKEMEvents_OnWriteCardEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnEmptyCard += new zkemkeeper._IZKEMEvents_OnEmptyCardEventHandler(axCZKEM1_OnAttTransactionEx);
+                    //axCZKEM1.OnDisConnected += new zkemkeeper._IZKEMEvents_OnDisConnectedEventHandler(axCZKEM1_OnDisConnected);
                 }
             }
             else
@@ -80,6 +102,8 @@ namespace UserInfo
             }
             trigger_t = new Thread(tfn_trigger);
             trigger_t.Start();
+            check_online = new Thread(tfn_check_online);
+            check_online.Start();
         }
 
         #endregion
@@ -840,8 +864,12 @@ namespace UserInfo
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
             DateTime machineDateTime;
             DateTime.TryParse(machieTime, out machineDateTime);
-            int i = Convert.ToInt32((machineDateTime - logDateTime).TotalSeconds);
-            if (i > 4)
+            if (machineDateTime == DateTime.MinValue)
+            {
+                return;
+            }
+            long i = Convert.ToInt32((machineDateTime - logDateTime).TotalSeconds);
+            if (i > 5)
             {
                 return;
             }
@@ -875,19 +903,6 @@ namespace UserInfo
                 fs.Close();
             }
         }
-        //private void axCZKEM1_OnVerify(int iUserID)
-        //{
-        //    System.Diagnostics.Debug.WriteLine("verify has triggerd");
-            //lbRTShow.Items.Add("RTEvent OnVerify Has been Triggered,Verifying...");
-            //if (iUserID != -1)
-            //{
-            //    lbRTShow.Items.Add("Verified OK,the UserID is " + iUserID.ToString());
-            //}
-            //else
-            //{
-            //    lbRTShow.Items.Add("Verified Failed... ");
-            //}
-        //}
         #endregion
     }
 }
