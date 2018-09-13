@@ -12,6 +12,7 @@ using System.IO;
 using System.Net;
 
 using System.Threading;
+using System.Timers;
 using WebServer;
 namespace UserInfo
 {
@@ -68,6 +69,22 @@ namespace UserInfo
                 Thread.Sleep(30000);
             }
         }
+        private void sync_time(object source, ElapsedEventArgs e)
+        {
+            if (DateTime.Now.Hour == 23 && DateTime.Now.Minute == 59)
+            {
+                int idwYear = 0, idwMonth = 0, idwDay = 0, idwHour = 0, idwMinute = 0, idwSecond = 0;
+                axCZKEM1.GetDeviceTime(iMachineNumber, ref idwYear, ref idwMonth, ref idwDay, ref idwHour, ref idwMinute, ref idwSecond);
+                string machieTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
+                            idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
+                DateTime machineDateTime;
+                DateTime.TryParse(machieTime, out machineDateTime);
+                if ((DateTime.Now - machineDateTime).TotalSeconds > 5)
+                {
+                    axCZKEM1.SetDeviceTime(iMachineNumber);
+                }
+            }                
+        }
         //If your device supports the TCP/IP communications, you can refer to this.
         //when you are using the tcp/ip communication,you can distinguish different devices by their IP address.
         public void btnConnect_Click(string ip_addr/*object sender, EventArgs e*/)
@@ -104,6 +121,11 @@ namespace UserInfo
             trigger_t.Start();
             check_online = new Thread(tfn_check_online);
             check_online.Start();
+            System.Timers.Timer timer_sync = new System.Timers.Timer();
+            timer_sync.Enabled = true;
+            timer_sync.Interval = 60000;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
+            timer_sync.Start();
+            timer_sync.Elapsed += new System.Timers.ElapsedEventHandler(sync_time);
         }
 
         #endregion
@@ -894,7 +916,7 @@ namespace UserInfo
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
+                //System.Diagnostics.Debug.WriteLine(ex.Message);
                 FileStream fs = new FileStream(logPath + "verifyError-" + iMachineNumber.ToString() + ".log", FileMode.Append);
                 StreamWriter sw = new StreamWriter(fs);
                 string S = data + " failed to send to:" + ex.Message; 
