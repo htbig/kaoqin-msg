@@ -61,6 +61,7 @@ namespace UserInfo
                     if ((false == axCZKEM1.EnableDevice(iMachineNumber, false)) || (bIsConnected == false))// disable the device,if return value is false,it means the machine has disconnectted,need reconnect 
                     {
                         axCZKEM1.Disconnect();
+                        axCZKEM1.OnAttTransactionEx -= new zkemkeeper._IZKEMEvents_OnAttTransactionExEventHandler(axCZKEM1_OnAttTransactionEx);
                         bIsConnected = false;
                         btnConnect_Click(WebServer.WebApiApplication.ips[iMachineNumber - 1]);
                     }
@@ -84,6 +85,18 @@ namespace UserInfo
                     axCZKEM1.SetDeviceTime(iMachineNumber);
                 }
             }                
+        }
+        public void StartUpTickJob()
+        {
+            trigger_t = new Thread(tfn_trigger);
+            trigger_t.Start();
+            check_online = new Thread(tfn_check_online);
+            check_online.Start();
+            System.Timers.Timer timer_sync = new System.Timers.Timer();
+            timer_sync.Enabled = true;
+            timer_sync.Interval = 60000;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
+            timer_sync.Start();
+            timer_sync.Elapsed += new System.Timers.ElapsedEventHandler(sync_time);
         }
         //If your device supports the TCP/IP communications, you can refer to this.
         //when you are using the tcp/ip communication,you can distinguish different devices by their IP address.
@@ -117,15 +130,6 @@ namespace UserInfo
             {
                 axCZKEM1.GetLastError(ref idwErrorCode);
             }
-            trigger_t = new Thread(tfn_trigger);
-            trigger_t.Start();
-            check_online = new Thread(tfn_check_online);
-            check_online.Start();
-            System.Timers.Timer timer_sync = new System.Timers.Timer();
-            timer_sync.Enabled = true;
-            timer_sync.Interval = 60000;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
-            timer_sync.Start();
-            timer_sync.Elapsed += new System.Timers.ElapsedEventHandler(sync_time);
         }
 
         #endregion
