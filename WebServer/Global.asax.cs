@@ -17,19 +17,19 @@ namespace WebServer
             "172.21.76.72", //货梯门口
             "172.21.80.66", //采购
             "172.21.80.67", //新租办公区
-            "172.21.96.64", //生产
-            "172.21.96.65" //生产
+            "172.21.96.64", //生产1
+            "172.21.96.65" //生产2
          
         };
 
-        protected void Application_Start()
+        public static  void Application_Start()
         {
             for (int i = 0; i < users.Length; i++)
             {
                 users[i] = new UserInfoMain(i+1);
                 users[i].btnConnect_Click(ips[i]);
             }
-            GlobalConfiguration.Configure(WebApiConfig.Register);
+            //GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
 }
