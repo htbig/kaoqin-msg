@@ -76,7 +76,11 @@ namespace OWIN_SignalR.Controller
                 string begin_time = Convert.ToString(obj.begin_time);
                 string end_time = Convert.ToString(obj.end_time);
                 int id = Convert.ToInt32(obj.id);
-                if (id > WebServer.WebApiApplication.users.Length || id < 1)
+                if(obj.id == null)
+                {
+                    id = 0;
+                }
+                if (id > WebServer.WebApiApplication.users.Length/* || id < 1*/)
                 {
                     System.Diagnostics.Debug.WriteLine("has no machine number");
                     return new HttpResponseMessage()
@@ -96,7 +100,28 @@ namespace OWIN_SignalR.Controller
                         Content = new StringContent("{\"code\":1,\"msg\":\"begin time must less than end time...\",\"output\":[]}", Encoding.UTF8, "application/json"),
                     };
                 }
-                string data = WebServer.WebApiApplication.users[id - 1].btnGetGeneralLogData_Click(t1, t2);
+                string data = "";
+                if (id != 0)
+                {
+                    data = WebServer.WebApiApplication.users[id - 1].btnGetGeneralLogData_Click(t1, t2);
+                }else
+                {
+                    for (int i = 0; i < WebServer.WebApiApplication.users.Length; i++)
+                    {
+                        string data_tmp = WebServer.WebApiApplication.users[i].btnGetGeneralLogData_Click(t1, t2);
+                        if (i == 0)
+                            data += data_tmp;
+                        else
+                        {
+                            data_tmp = data_tmp.TrimStart('[').TrimEnd(']');
+                            if(data_tmp != "")
+                            {
+                                data = data.Insert((data.Length - 1), ",");
+                            } 
+                            data = data.Insert((data.Length - 1), data_tmp );
+                        }
+                    }
+                }
                 return new HttpResponseMessage()
                 {
                     Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":"+data+"}", Encoding.UTF8, "application/json"),

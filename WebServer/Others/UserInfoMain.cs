@@ -40,16 +40,23 @@ namespace UserInfo
 
         private void tfn_trigger()
         {
-            while (bIsConnected == true)
+            while (true)
             {
-                lock (axCZKEM1)
+                if (bIsConnected == true)
                 {
-                    if (axCZKEM1.ReadRTLog(iMachineNumber))
+                    lock (axCZKEM1)
                     {
-                        while (axCZKEM1.GetRTLog(iMachineNumber)) ;
+                        if (axCZKEM1.ReadRTLog(iMachineNumber))
+                        {
+                            while (axCZKEM1.GetRTLog(iMachineNumber)) ;
+                        }
                     }
+                    Thread.Sleep(1000);
                 }
-                Thread.Sleep(1000);
+                else
+                {
+                    Thread.Sleep(30000);
+                }
             }
         }
         private void tfn_check_online()
