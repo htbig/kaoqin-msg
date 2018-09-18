@@ -906,9 +906,8 @@ namespace UserInfo
             {
                 return;
             }
-            string data = "{\"command\":\"send_msg\", \"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbAbdOiJIUzI1NiJ9.eyJ1c2VyIUiiSFowMzg4MSJ9.iC29yeuDdd8YwtCk_ix2EZ1gBTNlxa3c5YPhCYUA2a\", \"userlist\":\""+sEnrollNumber+"\"," +
-                "\"agentid\":13,\"text\":\"时间:"+ iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
-                iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString() +"，地址:"+ names[iMachineNumber - 1]+"\"}";
+            string data = String.Format("\"command\":\"send_msg\", \"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbAbdOiJIUzI1NiJ9.eyJ1c2VyIUiiSFowMzg4MSJ9.iC29yeuDdd8YwtCk_ix2EZ1gBTNlxa3c5YPhCYUA2a\", \"userlist\":\"{0:s}\",\"agentid\":13,\"text\":\"时间: {1:0000}-{2:00}-{3:00} {4:00}:{5:00}:{6:00},地址:{7:s}\"", sEnrollNumber, iYear, iMonth, iDay, iHour, iMinute, iSecond, names[iMachineNumber - 1]);
+            data = "{" + data + "}";
             byte[] byteData = UTF8Encoding.UTF8.GetBytes(data.ToString());
             request.ContentLength = byteData.Length;
             try
