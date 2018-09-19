@@ -170,15 +170,17 @@ namespace UserInfo
             int iTmpLength = 0;
             int iFlag = 0;
             int iFaceIndex = 50;// 'the only possible parameter value
-            string sTmpFaceData = "";
-            int iFaceLength = 0;
+            int iFaceLength = 128 * 1024; //initialize the length(cannot be zero)
+            byte [] sTmpFaceData = new byte[iFaceLength];
             string sCardnumber = "";
             string S = "";
+            string S_tmp = "";//for figer templates
             S = "工号," + "姓名," + "指纹索引," + "指纹序列," + "等级," + "密码," + "使能," + "标记," + "人脸索引," + "人脸序列," + "人脸字节数," + "卡号";
             FileStream fs = new FileStream(logPath +"userInfo.csv", FileMode.OpenOrCreate);
             StreamWriter sw = new StreamWriter(fs);
             sw.WriteLine(S);
             bool bHasFg = false;
+            bool bHasFg_tmp = false;
             bool bHasFc = false;
             axCZKEM1.EnableDevice(iMachineNumber, false);
             axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
@@ -189,30 +191,57 @@ namespace UserInfo
                 {
                     if (axCZKEM1.GetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, out iFlag, out sTmpData, out iTmpLength))//get the corresponding templates string and length from the memory
                     {
-                        bHasFg = true;
-                        S = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
+                        if (bHasFg == true)
+                        {
+                            bHasFg_tmp = true;
+                            S_tmp = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
+                        }
+                        else
+                        {
+                            bHasFg = true;
+                            S = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
+                        } 
                     }
                 }
-                if (axCZKEM1.GetUserFaceStr(iMachineNumber, sdwEnrollNumber, iFaceIndex, sTmpFaceData, iFaceLength))
+                iFaceLength = 128 * 1024;//can't be zero
+                if (axCZKEM1.GetUserFace(iMachineNumber, sdwEnrollNumber, iFaceIndex, ref sTmpFaceData[0], ref iFaceLength))
                 {// 'get the face templates from the memory
                     if (bHasFg == false)
                     {
                         S = sdwEnrollNumber + "," + sName + "," + "" + "," + "" + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
                     }
-                    S = S + "," + iFaceIndex + "," + sTmpFaceData + "," + iFaceLength;
+                    if(bHasFg_tmp == true)
+                    {
+                        S_tmp = S_tmp + "," + iFaceIndex + "," + Convert.ToBase64String(sTmpFaceData) + "," + iFaceLength;
+                    }
+                    S = S + "," + iFaceIndex + "," + Convert.ToBase64String(sTmpFaceData) + "," + iFaceLength;
+                    //S = S + "," + iFaceIndex + "," + sTmpFaceData + "," + iFaceLength;
                     bHasFc = true;
                 }
                 if (axCZKEM1.GetStrCardNumber(out sCardnumber)) {// 'get the card number from the memory
                     if (bHasFg == false && bHasFc == false) {
                         S = sdwEnrollNumber + "," + sName + "," + "" + "," + "" + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag + "," + "" + "," + "" + "," + "";
                     } else if (bHasFc == false) {
+                        if (bHasFg_tmp == true)
+                        {
+                            S_tmp = S_tmp + "," + "" + "," + "" + "," + "";
+                        }
                         S = S + "," + "" + "," + "" + "," + "";
                     }
                     long lNumber = Convert.ToInt64 (sCardnumber);
                     string sHexNumner = Convert.ToString(lNumber, 16);
+                    if (bHasFg_tmp == true)
+                    {
+                        S_tmp = S_tmp + "," + sHexNumner;
+                    }
                     S = S + "," + sHexNumner;
                  }
                 sw.WriteLine(S);
+                if (bHasFg_tmp == true)
+                {
+                    sw.WriteLine(S_tmp);
+                }
+                bHasFg_tmp = false;
                 bHasFg = false;
                 bHasFc = false;
             }
@@ -290,7 +319,8 @@ namespace UserInfo
                             axCZKEM1.SetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, iFlag, sTmpData);// upload templates information to the device
                             if (bHasFace == true)
                             {
-                                axCZKEM1.SetUserFaceStr(iMachineNumber, sdwEnrollNumber, iFaceIndex, sTmpFaceData, iTmpLength);//upload face templates information to the device
+                                byte[] decBytes = Convert.FromBase64String(sTmpFaceData);
+                                axCZKEM1.SetUserFace(iMachineNumber, sdwEnrollNumber, iFaceIndex, ref decBytes[0], iTmpLength);//upload face templates information to the device
                                 bHasFace = false;
                             }
                         }
