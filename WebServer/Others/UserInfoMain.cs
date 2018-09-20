@@ -269,7 +269,7 @@ namespace UserInfo
             int iPrivilege = 0;
             string sPassword = "";
             string sEnabled = "";
-            bool bEnabled = false;
+            bool bEnabled = true;
             int iFlag = 1;
             bool bHasFace = false;
             int iFaceIndex = 0;
