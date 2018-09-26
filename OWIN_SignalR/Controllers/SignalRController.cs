@@ -263,5 +263,39 @@ namespace OWIN_SignalR.Controller
             System.Diagnostics.Debug.WriteLine("delete att logs successfull"+id);
             return Ok(0);
         }
+
+        [HttpDelete]
+        public HttpResponseMessage DeleteUser(dynamic obj)
+        {
+            try
+            {
+                int i = 0;
+                string userid = Convert.ToString(obj.userid);
+                if (obj.userid == null)
+                {
+                    return new HttpResponseMessage()
+                    {
+                        Content = new StringContent("{\"code\":1,\"msg\":\"" + "no userid appoint" + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                    };
+                }
+                for(i = 0; i < WebServer.WebApiApplication.users.Length; i++)
+                {
+                    WebServer.WebApiApplication.users[i].btnDeleteEnrollData_Click(userid);
+                }
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":1,\"msg\":\"" + e.Message + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }  
+        }
+        
     }
 }

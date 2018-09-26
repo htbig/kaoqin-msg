@@ -621,37 +621,25 @@ namespace UserInfo
 
         //Delete a kind of data that some user has enrolled
         //The range of the Backup Number is from 0 to 9 and the specific meaning of Backup number is described in the development manual,pls refer to it.
-        //private void btnDeleteEnrollData_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-
-        //    if (cbUserIDDE.Text.Trim() == "" || cbBackupDE.Text.Trim() == "")
-        //    {
-        //        MessageBox.Show("Please input the UserID and BackupNumber first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    string sUserID = cbUserIDDE.Text.Trim();
-        //    int iBackupNumber = Convert.ToInt32(cbBackupDE.Text.Trim());
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.SSR_DeleteEnrollData(iMachineNumber, sUserID, iBackupNumber))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //        MessageBox.Show("DeleteEnrollData,UserID=" + sUserID + " BackupNumber=" + iBackupNumber.ToString(), "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-        //}
+        public void btnDeleteEnrollData_Click(string userId)
+        {
+            if (bIsConnected == false)
+            {
+                System.Console.Write("Please connect the device first!", "Error");
+                return;
+            }
+            int idwErrorCode = 0;
+            if (axCZKEM1.SSR_DeleteEnrollData(iMachineNumber, userId, 12)) //12 means delete user info
+            {
+                axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
+                System.Diagnostics.Debug.WriteLine("Successfully delete user info");
+            }
+            else
+            {
+                axCZKEM1.GetLastError(ref idwErrorCode);
+                System.Diagnostics.Debug.WriteLine("Operation failed,ErrorCode=" + idwErrorCode.ToString());
+            }
+        }
 
         //Clear all the administrator privilege(not clear the administrators themselves)
         //private void btnClearAdministrators_Click(object sender, EventArgs e)
