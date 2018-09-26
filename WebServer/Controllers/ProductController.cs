@@ -63,7 +63,7 @@ namespace WebServer.Controllers
         private int upLoadUserInfoTask(object index)
         {
             int id = Convert.ToInt32(index);
-            WebServer.WebApiApplication.users[id - 1].btnUploadUserInfo_Click();
+            //WebServer.WebApiApplication.users[id - 1].btnUploadUserInfo_Click();
             return 1;
         }
         [HttpPost]

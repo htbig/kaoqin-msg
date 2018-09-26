@@ -351,72 +351,36 @@ namespace UserInfo
         //Only TFT screen devices with firmware version Ver 6.60 version later support function "SetUserTmpExStr" and "SetUserTmpEx".
         //While you are using 9.0 fingerprint arithmetic and your device's firmware version is under ver6.60,you should use the functions "SSR_SetUserTmp" or 
         //"SSR_SetUserTmpStr" instead of "SetUserTmpExStr" or "SetUserTmpEx" in order to upload the fingerprint templates.
-        public void btnUploadUserInfo_Click()
+        public void btnUploadUserInfo_Click(string user_id, string user_name, string card_number)
         {
             if (bIsConnected == false)
             {
-                System.Console.Write("Please connect the device first!", "Error");
+                System.Console.Write("Please connect the device first!"+iMachineNumber.ToString(), "Error");
                 return;
             }
-            //int idwErrorCode = 0;
-            string sdwEnrollNumber = "";
-            string sName = "";
-            int idwFingerIndex = 0;
-            string sTmpData = "";
+            int idwErrorCode = 0;
+            string sdwEnrollNumber = user_id;
+            string sName = user_name;    
             int iPrivilege = 0;
             string sPassword = "";
-            int iFlag = 0;
-            bool  bHasFace = false;
-            int iFaceIndex = 0; 
-            string sEnabled = "";
-            bool bEnabled = false;
-            string sTmpFaceData="";
-            int iTmpLength = 0;
-            string[] sArray;
-            StreamReader objReader = new StreamReader(logPath + "userInfo.csv");
-            string sLine = "";
-            sLine = objReader.ReadLine();
-            sLine = objReader.ReadLine();
-            axCZKEM1.EnableDevice(iMachineNumber, false);
-            while (sLine != null)
-            {
-                sArray = sLine.Split(','); 
-                if (sArray.Length != 12)
-                {
-                    System.Diagnostics.Debug.WriteLine("csv file not right");
-                    return;
-                }
-                sdwEnrollNumber = sArray[0];
-                sName = sArray[1];
-                idwFingerIndex = int.Parse(sArray[2] == "" ? "0":sArray[2]);
-                sTmpData = sArray[3];
-                iPrivilege = int.Parse(sArray[4]);
-                sPassword = sArray[5];
-                sEnabled = sArray[6];
-                iFlag = int.Parse(sArray[7]);
-                if (sArray[8] == "50")
-                {
-                    bHasFace = true;
-                    iFaceIndex = int.Parse (sArray[8]);
-                    sTmpFaceData = sArray[9];
-                    iTmpLength = int.Parse(sArray[10]);
-                }
-                string hexString = sArray[11];
-                int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
-                axCZKEM1.SetStrCardNumber(num.ToString()); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
-                if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sdwEnrollNumber, sName, sPassword, iPrivilege, bEnabled)) {//upload user information to the device
-                    axCZKEM1.SetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, iFlag, sTmpData);// upload templates information to the device
-                    if (bHasFace == true) {
-                        axCZKEM1.SetUserFaceStr(iMachineNumber, sdwEnrollNumber, iFaceIndex, sTmpFaceData, iTmpLength);//upload face templates information to the device
-                        bHasFace = false;
-                    }
-                }
-                sLine = objReader.ReadLine();
+            bool bEnabled = true;
+            
+            axCZKEM1.EnableDevice(iMachineNumber, false);    
+            string hexString = card_number;
+            int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+            axCZKEM1.SetStrCardNumber(num.ToString()); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
+            if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sdwEnrollNumber, sName, sPassword, iPrivilege, bEnabled)) {//upload user information to the device
+                System.Diagnostics.Debug.WriteLine("Successfully Upload user info!!!");
             }
-            objReader.Close();
+            else
+            {
+                axCZKEM1.GetLastError(ref idwErrorCode);
+                System.Diagnostics.Debug.WriteLine("set userinfo failed!!!");
+                axCZKEM1.EnableDevice(iMachineNumber, true);
+                return;
+            }
             axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
             axCZKEM1.EnableDevice(iMachineNumber, true);
-            System.Diagnostics.Debug.WriteLine("Successfully Upload fingerprint templates, " + "total:" + "Success");
         }
 
         public string btnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {

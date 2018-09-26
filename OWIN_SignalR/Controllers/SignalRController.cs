@@ -264,14 +264,48 @@ namespace OWIN_SignalR.Controller
             return Ok(0);
         }
 
+        [HttpPut]
+        public HttpResponseMessage AddUser(dynamic obj)
+        {
+            try
+            {
+                string user_id = Convert.ToString(obj.user_id);
+                string user_name = Convert.ToString(obj.user_name);
+                string card_number = Convert.ToString(obj.card_number);
+                if (obj.user_id == null || obj.user_name == null || obj.card_number == null)
+                {
+                    return new HttpResponseMessage()
+                    {
+                        Content = new StringContent("{\"code\":1,\"msg\":\"need user_id, user_name, card_number input paremeter\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                    };
+                }
+                for (int i = 0; i < WebServer.WebApiApplication.users.Length; i++)
+                {
+                    WebServer.WebApiApplication.users[i].btnUploadUserInfo_Click(user_id, user_name, card_number);
+                }
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":1,\"msg\":\"" + e.Message + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+        }
+
         [HttpDelete]
         public HttpResponseMessage DeleteUser(dynamic obj)
         {
             try
             {
                 int i = 0;
-                string userid = Convert.ToString(obj.userid);
-                if (obj.userid == null)
+                string user_id = Convert.ToString(obj.user_id);
+                if (obj.user_id == null)
                 {
                     return new HttpResponseMessage()
                     {
@@ -280,7 +314,7 @@ namespace OWIN_SignalR.Controller
                 }
                 for(i = 0; i < WebServer.WebApiApplication.users.Length; i++)
                 {
-                    WebServer.WebApiApplication.users[i].btnDeleteEnrollData_Click(userid);
+                    WebServer.WebApiApplication.users[i].btnDeleteEnrollData_Click(user_id);
                 }
                 return new HttpResponseMessage()
                 {
