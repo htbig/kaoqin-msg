@@ -20,6 +20,12 @@ namespace OWIN_SignalR
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            config.Routes.MapHttpRoute(
+                name: "UserInfo",
+                routeTemplate: "userinfo/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
             app.UseWebApi(config);
         }
     }

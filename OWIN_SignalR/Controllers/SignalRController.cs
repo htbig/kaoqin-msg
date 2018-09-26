@@ -12,6 +12,8 @@ namespace OWIN_SignalR.Controller
 {
     public class SignalRController : ApiController
     {
+        static int process = 0;
+        static bool syncFlag = false;
         private int downLoadUserInfoTask(object index)
         {
             int id = Convert.ToInt32(index);
@@ -66,6 +68,112 @@ namespace OWIN_SignalR.Controller
                 return;
             }
             AsyncBatchUserInfo(index);
+        }
+
+        [HttpGet]
+        public HttpResponseMessage GetSyncStatus()
+        {
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":{\"process\":"+ process +"}}", Encoding.UTF8, "application/json"),
+            };
+        }
+        private int SyncUserInfoTask(object index)
+        {
+            int id = Convert.ToInt32(index);
+            int total = WebServer.WebApiApplication.users.Length;
+            int i = 0;
+            try
+            {
+                WebServer.WebApiApplication.users[id - 1].btnDownloadUserInfo_Click();
+                process = 20;
+                System.Diagnostics.Debug.WriteLine("down load success");
+                if (id == 1)
+                {
+                    for (i = 1; i < total; i++)
+                    {
+                        WebServer.WebApiApplication.users[i].btnBatchUpdate_Click();
+                        process = +10;
+                    }
+                }
+                else if (id == 9)
+                {
+                    for (i = 0; i < total - 1; i++)
+                    {
+                        WebServer.WebApiApplication.users[i].btnBatchUpdate_Click();
+                        process = +10;
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < id - 1; i++)
+                    {
+                        WebServer.WebApiApplication.users[i].btnBatchUpdate_Click();
+                        process = +10;
+                    }
+                    for (i = id; i < total; i++)
+                    {
+                        WebServer.WebApiApplication.users[i].btnBatchUpdate_Click();
+                        process = +10;
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine("upload success");
+                process = 100;
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+            syncFlag = false;
+            return 1;
+        }
+        async Task AsyncSyncUserInfo(int index)
+        {
+            var task = Task<int>.Factory.StartNew(new Func<object, int>(SyncUserInfoTask), index);
+            await task;
+        }
+        [HttpPut]
+        public HttpResponseMessage Sync(dynamic obj)
+        {
+            if(syncFlag == true)
+            {
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":1,\"msg\":\"" + "Synching" + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+            process = 0;
+            int id = 2; //default id is 2:前台
+            try
+            {
+                id = Convert.ToInt32(obj.id);  //mathine id 1~9
+                if (obj.id == null)
+                {
+                    id = 2;
+                }
+                if (id > WebServer.WebApiApplication.users.Length)
+                {
+                    System.Diagnostics.Debug.WriteLine("has no machine number");
+                    return new HttpResponseMessage()
+                    {
+                        Content = new StringContent("{\"code\":1,\"msg\":\"has no such machine number\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":1,\"msg\":\"" + e.Message + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+            syncFlag = true;
+            AsyncSyncUserInfo(id);
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":[]}", Encoding.UTF8, "application/json"),
+            };
         }
 
         [HttpPost]
