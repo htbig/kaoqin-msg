@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
-using WebServer.Models;
 using System.IO;
 using System.Net;
 
@@ -38,7 +37,7 @@ namespace UserInfo
         private Thread trigger_t;
         private Thread check_online;
 
-        private void tfn_trigger()
+        private void Tfn_trigger()
         {
             while (true)
             {
@@ -59,7 +58,7 @@ namespace UserInfo
                 }
             }
         }
-        private void tfn_check_online()
+        private void Tfn_check_online()
         {
             while (true)
             {
@@ -68,16 +67,16 @@ namespace UserInfo
                     if ((false == axCZKEM1.EnableDevice(iMachineNumber, false)) || (bIsConnected == false))// disable the device,if return value is false,it means the machine has disconnectted,need reconnect 
                     {
                         axCZKEM1.Disconnect();
-                        axCZKEM1.OnAttTransactionEx -= new zkemkeeper._IZKEMEvents_OnAttTransactionExEventHandler(axCZKEM1_OnAttTransactionEx);
+                        axCZKEM1.OnAttTransactionEx -= new zkemkeeper._IZKEMEvents_OnAttTransactionExEventHandler(AxCZKEM1_OnAttTransactionEx);
                         bIsConnected = false;
-                        btnConnect_Click(WebServer.WebApiApplication.ips[iMachineNumber - 1]);
+                        BtnConnect_Click(WebServer.WebApiApplication.ips[iMachineNumber - 1]);
                     }
 
                 }
                 Thread.Sleep(30000);
             }
         }
-        private void sync_time(object source, ElapsedEventArgs e)
+        private void Sync_time(object source, ElapsedEventArgs e)
         {
             if (DateTime.Now.Hour == 23 && DateTime.Now.Minute == 59)
             {
@@ -85,8 +84,7 @@ namespace UserInfo
                 axCZKEM1.GetDeviceTime(iMachineNumber, ref idwYear, ref idwMonth, ref idwDay, ref idwHour, ref idwMinute, ref idwSecond);
                 string machieTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
-                DateTime machineDateTime;
-                DateTime.TryParse(machieTime, out machineDateTime);
+                DateTime.TryParse(machieTime, out DateTime machineDateTime);
                 if ((DateTime.Now - machineDateTime).TotalSeconds > 5)
                 {
                     axCZKEM1.SetDeviceTime(iMachineNumber);
@@ -95,19 +93,21 @@ namespace UserInfo
         }
         public void StartUpTickJob()
         {
-            trigger_t = new Thread(tfn_trigger);
+            trigger_t = new Thread(Tfn_trigger);
             trigger_t.Start();
-            check_online = new Thread(tfn_check_online);
+            check_online = new Thread(Tfn_check_online);
             check_online.Start();
-            System.Timers.Timer timer_sync = new System.Timers.Timer();
-            timer_sync.Enabled = true;
-            timer_sync.Interval = 60000;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
+            System.Timers.Timer timer_sync = new System.Timers.Timer
+            {
+                Enabled = true,
+                Interval = 60000//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
+            };
             timer_sync.Start();
-            timer_sync.Elapsed += new System.Timers.ElapsedEventHandler(sync_time);
+            timer_sync.Elapsed += new System.Timers.ElapsedEventHandler(Sync_time);
         }
         //If your device supports the TCP/IP communications, you can refer to this.
         //when you are using the tcp/ip communication,you can distinguish different devices by their IP address.
-        public void btnConnect_Click(string ip_addr/*object sender, EventArgs e*/)
+        public void BtnConnect_Click(string ip_addr/*object sender, EventArgs e*/)
         {            
             int idwErrorCode = 0;
 
@@ -120,7 +120,7 @@ namespace UserInfo
                 {//Here you can register the realtime events that you want to be triggered(the parameters 65535 means registering all)
                     //this.axCZKEM1.OnFinger += new zkemkeeper._IZKEMEvents_OnFingerEventHandler(axCZKEM1_OnAttTransactionEx);
                     //axCZKEM1.OnVerify += new zkemkeeper._IZKEMEvents_OnVerifyEventHandler(axCZKEM1_OnVerify);
-                    axCZKEM1.OnAttTransactionEx += new zkemkeeper._IZKEMEvents_OnAttTransactionExEventHandler(axCZKEM1_OnAttTransactionEx);
+                    axCZKEM1.OnAttTransactionEx += new zkemkeeper._IZKEMEvents_OnAttTransactionExEventHandler(AxCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnFingerFeature += new zkemkeeper._IZKEMEvents_OnFingerFeatureEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnEnrollFingerEx += new zkemkeeper._IZKEMEvents_OnEnrollFingerExEventHandler(axCZKEM1_OnAttTransactionEx);
                     //this.axCZKEM1.OnDeleteTemplate += new zkemkeeper._IZKEMEvents_OnDeleteTemplateEventHandler(axCZKEM1_OnAttTransactionEx);
@@ -147,257 +147,13 @@ namespace UserInfo
         * ************************************************************************************************/
         #region UserInfo
 
-        //Download user's 9.0 or 10.0 arithmetic fingerprint templates(in strings)
-        //Only TFT screen devices with firmware version Ver 6.60 version later support function "GetUserTmpExStr" and "GetUserTmpEx".
-        //'While you are using 9.0 fingerprint arithmetic and your device's firmware version is under ver6.60,you should use the functions "SSR_GetUserTmp" or 
-        //"SSR_GetUserTmpStr" instead of "GetUserTmpExStr" or "GetUserTmpEx" in order to download the fingerprint templates.
-        public void btnDownloadUserInfo_Click()
-        {
-            if (bIsConnected == false)
-            {
-                System.Console.Write("Please connect the device first!", "Error");
-                return;
-            }
-
-            string sdwEnrollNumber = "";
-            string sName = "";
-            string sPassword = "";
-            int iPrivilege = 0;
-            bool bEnabled = false;
-
-            int idwFingerIndex;
-            string sTmpData = "";
-            int iTmpLength = 0;
-            int iFlag = 0;
-            int iFaceIndex = 50;// 'the only possible parameter value
-            int iFaceLength = 128 * 1024; //initialize the length(cannot be zero)
-            byte [] sTmpFaceData = new byte[iFaceLength];
-            string sCardnumber = "";
-            string S = "";
-            string S_tmp = "";//for figer templates
-            S = "工号," + "姓名," + "指纹索引," + "指纹序列," + "等级," + "密码," + "使能," + "标记," + "人脸索引," + "人脸序列," + "人脸字节数," + "卡号";
-            FileStream fs = new FileStream(logPath +"userInfo.csv", FileMode.OpenOrCreate);
-            StreamWriter sw = new StreamWriter(fs);
-            sw.WriteLine(S);
-            bool bHasFg = false;
-            bool bHasFg_tmp = false;
-            bool bHasFc = false;
-            axCZKEM1.EnableDevice(iMachineNumber, false);
-            axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
-            axCZKEM1.ReadAllTemplate(iMachineNumber);//read all the users' fingerprint templates to the memory
-            while (axCZKEM1.SSR_GetAllUserInfo(iMachineNumber, out sdwEnrollNumber, out sName, out sPassword, out iPrivilege, out bEnabled))//get all the users' information from the memory
-            {
-                for (idwFingerIndex = 0; idwFingerIndex < 10; idwFingerIndex++)
-                {
-                    if (axCZKEM1.GetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, out iFlag, out sTmpData, out iTmpLength))//get the corresponding templates string and length from the memory
-                    {
-                        if (bHasFg == true)
-                        {
-                            bHasFg_tmp = true;
-                            S_tmp = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
-                        }
-                        else
-                        {
-                            bHasFg = true;
-                            S = sdwEnrollNumber + "," + sName + "," + idwFingerIndex + "," + sTmpData + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
-                        } 
-                    }
-                }
-                iFaceLength = 128 * 1024;//can't be zero
-                if (axCZKEM1.GetUserFace(iMachineNumber, sdwEnrollNumber, iFaceIndex, ref sTmpFaceData[0], ref iFaceLength))
-                {// 'get the face templates from the memory
-                    if (bHasFg == false)
-                    {
-                        S = sdwEnrollNumber + "," + sName + "," + "" + "," + "" + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag;
-                    }
-                    if(bHasFg_tmp == true)
-                    {
-                        S_tmp = S_tmp + "," + iFaceIndex + "," + Convert.ToBase64String(sTmpFaceData) + "," + iFaceLength;
-                    }
-                    S = S + "," + iFaceIndex + "," + Convert.ToBase64String(sTmpFaceData) + "," + iFaceLength;
-                    //S = S + "," + iFaceIndex + "," + sTmpFaceData + "," + iFaceLength;
-                    bHasFc = true;
-                }
-                if (axCZKEM1.GetStrCardNumber(out sCardnumber)) {// 'get the card number from the memory
-                    if (bHasFg == false && bHasFc == false) {
-                        S = sdwEnrollNumber + "," + sName + "," + "" + "," + "" + "," + iPrivilege + "," + sPassword + "," + bEnabled + "," + iFlag + "," + "" + "," + "" + "," + "";
-                    } else if (bHasFc == false) {
-                        if (bHasFg_tmp == true)
-                        {
-                            S_tmp = S_tmp + "," + "" + "," + "" + "," + "";
-                        }
-                        S = S + "," + "" + "," + "" + "," + "";
-                    }
-                    long lNumber = Convert.ToInt64 (sCardnumber);
-                    string sHexNumner = Convert.ToString(lNumber, 16);
-                    if (bHasFg_tmp == true)
-                    {
-                        S_tmp = S_tmp + "," + sHexNumner;
-                    }
-                    S = S + "," + sHexNumner;
-                 }
-                sw.WriteLine(S);
-                if (bHasFg_tmp == true)
-                {
-                    sw.WriteLine(S_tmp);
-                }
-                bHasFg_tmp = false;
-                bHasFg = false;
-                bHasFc = false;
-            }
-            sw.Close();
-            fs.Close();
-            axCZKEM1.EnableDevice(iMachineNumber, true);
-        }
-
-        //Upload the 9.0 or 10.0 fingerprint arithmetic templates to the device(in strings) in batches.
-        //Only TFT screen devices with firmware version Ver 6.60 version later support function "SetUserTmpExStr" and "SetUserTmpEx".
-        //While you are using 9.0 fingerprint arithmetic and your device's firmware version is under ver6.60,you should use the functions "SSR_SetUserTmp" or 
-        //"SSR_SetUserTmpStr" instead of "SetUserTmpExStr" or "SetUserTmpEx" in order to upload the fingerprint templates.
-        public void btnBatchUpdate_Click()
-        {
-            if (bIsConnected == false)
-            {
-                System.Console.Write("Please connect the device first!", "Error");
-                return;
-            }
-            int idwErrorCode = 0;
-            string sdwEnrollNumber = "";
-            string sName = "";
-            int idwFingerIndex = 0;
-            string sTmpData = "";
-            int iPrivilege = 0;
-            string sPassword = "";
-            string sEnabled = "";
-            bool bEnabled = true;
-            int iFlag = 1;
-            bool bHasFace = false;
-            int iFaceIndex = 0;
-            string sTmpFaceData = "";
-            int iTmpLength = 0;
-            string[] sArray;
-            StreamReader objReader = new StreamReader(logPath + "userInfo.csv");
-            string sLine = "";
-            sLine = objReader.ReadLine();
-            sLine = objReader.ReadLine();
-            int iUpdateFlag = 1;
-            axCZKEM1.EnableDevice(iMachineNumber, false);
-            if (axCZKEM1.BeginBatchUpdate(iMachineNumber, iUpdateFlag))//create memory space for batching data
-            {
-                string sLastEnrollNumber = "";//the former enrollnumber you have upload(define original value as 0)
-                while (sLine != null)
-                {
-                    sArray = sLine.Split(',');
-                    if (sArray.Length != 12)
-                    {
-                        System.Diagnostics.Debug.WriteLine("csv file not right");
-                        return;
-                    }
-                    sdwEnrollNumber = sArray[0];
-                    sName = sArray[1];
-                    idwFingerIndex = int.Parse(sArray[2] == "" ? "0" : sArray[2]);
-                    sTmpData = sArray[3];
-                    iPrivilege = int.Parse(sArray[4]);
-                    sPassword = sArray[5];
-                    sEnabled = sArray[6];
-                    iFlag = int.Parse(sArray[7]);
-                    if (sArray[8] == "50")
-                    {
-                        bHasFace = true;
-                        iFaceIndex = int.Parse(sArray[8]);
-                        sTmpFaceData = sArray[9];
-                        iTmpLength = int.Parse(sArray[10]);
-                    }
-                    //sCardnumber = long.Parse(sArray[11]);
-                    if (sdwEnrollNumber != sLastEnrollNumber)
-                    {
-                        string hexString = sArray[11];
-                        int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
-                        axCZKEM1.SetStrCardNumber(num.ToString()); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
-                        if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sdwEnrollNumber, sName, sPassword, iPrivilege, bEnabled))
-                        {//upload user information to the device
-                            axCZKEM1.SetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, iFlag, sTmpData);// upload templates information to the device
-                            if (bHasFace == true)
-                            {
-                                byte[] decBytes = Convert.FromBase64String(sTmpFaceData);
-                                axCZKEM1.SetUserFace(iMachineNumber, sdwEnrollNumber, iFaceIndex, ref decBytes[0], iTmpLength);//upload face templates information to the device
-                                bHasFace = false;
-                            }
-                        }
-                        else
-                        {
-                            axCZKEM1.GetLastError(ref idwErrorCode);
-                            System.Diagnostics.Debug.WriteLine("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-                            axCZKEM1.EnableDevice(iMachineNumber, true);
-                            return;
-                        }
-                    }
-                    else//the current fingerprint and the former one belongs the same user,that is ,one user has more than one template
-                    {
-                        axCZKEM1.SetUserTmpExStr(iMachineNumber, sdwEnrollNumber, idwFingerIndex, iFlag, sTmpData);
-                    }
-                    sLastEnrollNumber = sdwEnrollNumber;//change the value of iLastEnrollNumber dynamicly
-                    sLine = objReader.ReadLine();
-                }
-            }
-            objReader.Close();
-            axCZKEM1.BatchUpdate(iMachineNumber);//upload all the information in the memory
-            axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            axCZKEM1.EnableDevice(iMachineNumber, true);
-            System.Diagnostics.Debug.WriteLine("Successfully upload fingerprint templates in batches , " + "total:" + "Success");
-        }
-
-        //Upload the 9.0 or 10.0 fingerprint arithmetic templates one by one(in strings)
-        //Only TFT screen devices with firmware version Ver 6.60 version later support function "SetUserTmpExStr" and "SetUserTmpEx".
-        //While you are using 9.0 fingerprint arithmetic and your device's firmware version is under ver6.60,you should use the functions "SSR_SetUserTmp" or 
-        //"SSR_SetUserTmpStr" instead of "SetUserTmpExStr" or "SetUserTmpEx" in order to upload the fingerprint templates.
-        public void btnUploadUserInfo_Click(string user_id, string user_name, string card_number)
-        {
-            if (bIsConnected == false)
-            {
-                System.Console.Write("Please connect the device first!"+iMachineNumber.ToString(), "Error");
-                return;
-            }
-            int idwErrorCode = 0;
-            string sdwEnrollNumber = user_id;
-            string sName = user_name;    
-            int iPrivilege = 0;
-            string sPassword = "";
-            bool bEnabled = true;
-            
-            axCZKEM1.EnableDevice(iMachineNumber, false);    
-            string hexString = card_number;
-            int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
-            axCZKEM1.SetStrCardNumber(num.ToString()); //Before you using function SetUserInfo,set the card number to make sure you can upload it to the device
-            if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sdwEnrollNumber, sName, sPassword, iPrivilege, bEnabled)) {//upload user information to the device
-                System.Diagnostics.Debug.WriteLine("Successfully Upload user info!!!");
-            }
-            else
-            {
-                axCZKEM1.GetLastError(ref idwErrorCode);
-                System.Diagnostics.Debug.WriteLine("set userinfo failed!!!");
-                axCZKEM1.EnableDevice(iMachineNumber, true);
-                return;
-            }
-            axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-            axCZKEM1.EnableDevice(iMachineNumber, true);
-        }
-
-        public string btnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {
+        public string BtnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {
             if (bIsConnected == false)
             {
                 System.Console.Write("Please connect the device first!", "Error");
                 return "[]";
             }
             string sdwEnrollNumber = "";
-            int idwVerifyMode;
-            int idwInOutMode;
-            int idwYear;
-            int idwMonth;
-            int idwDay;
-            int idwHour;
-            int idwMinute;
-            int idwSecond;
             int idwWorkcode = 0;
             int idwErrorCode = 0;
             //string url = "http://10.4.32.248:8500/api/sw_version";
@@ -418,7 +174,7 @@ namespace UserInfo
                 if (axCZKEM1.ReadGeneralLogData(iMachineNumber))
                 {// read all the attendance records to the memory
                  //get records from the memory
-                    while (axCZKEM1.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out idwVerifyMode, out idwInOutMode, out idwYear, out idwMonth, out idwDay, out idwHour, out idwMinute, out idwSecond, ref idwWorkcode))
+                    while (axCZKEM1.SSR_GetGeneralLogData(iMachineNumber, out sdwEnrollNumber, out int idwVerifyMode, out int idwInOutMode, out int idwYear, out int idwMonth, out int idwDay, out int idwHour, out int idwMinute, out int idwSecond, ref idwWorkcode))
                     {
                         //S = sdwEnrollNumber + "," + idwVerifyMode.ToString() + "," + idwInOutMode.ToString() + "," + idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " "
                         //+ idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString() + "," + idwWorkcode.ToString() + "," + iMachineNumber.ToString();
@@ -435,8 +191,7 @@ namespace UserInfo
                         {
                             string logTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                                 idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
-                            DateTime logDateTime;
-                            DateTime.TryParse(logTime, out logDateTime);
+                            DateTime.TryParse(logTime, out DateTime logDateTime);
                             if (logDateTime > start_time && logDateTime < end_time)
                             {
                                 data += "{\"iMachineNumber\":" + iMachineNumber.ToString() + ",\"sMachineName\":\"" + names[iMachineNumber - 1] + "\",\"sEnrollNumber\":\"" + sdwEnrollNumber +
@@ -472,7 +227,7 @@ namespace UserInfo
             return data;
         }
         //Clear all attendance records from terminal
-        public void btnClearGLog_Click()
+        public void BtnClearGLog_Click()
         {
             if (bIsConnected == false)
             {
@@ -495,369 +250,10 @@ namespace UserInfo
             axCZKEM1.EnableDevice(iMachineNumber, true);//enable the device
         }
 
-        //Delete a certain user's fingerprint template of specified index
-        //You shuold input the the user id and the fingerprint index you will delete
-        //The difference between the two functions "SSR_DelUserTmpExt" and "SSR_DelUserTmp" is that the former supports 24 bits' user id.
-        //private void btnSSR_DelUserTmpExt_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-
-        //    if (cbUserIDTmp.Text.Trim() == "" || cbFingerIndex.Text.Trim() == "")
-        //    {
-        //        MessageBox.Show("Please input the UserID and FingerIndex first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    string sUserID = cbUserIDTmp.Text.Trim();
-        //    int iFingerIndex = Convert.ToInt32(cbFingerIndex.Text.Trim());
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.SSR_DelUserTmpExt(iMachineNumber, sUserID, iFingerIndex))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //        MessageBox.Show("SSR_DelUserTmpExt,UserID:" + sUserID + " FingerIndex:" + iFingerIndex.ToString(), "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-        //}
-
-        //Clear all the fingerprint templates in the device(While the parameter DataFlag  of the Function "ClearData" is 2 )
-        //private void btnClearDataTmps_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    int iDataFlag = 2;
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //        MessageBox.Show("Clear all the fingerprint templates!", "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-        //}
-
-        //Delete all the user information in the device,while the related fingerprint templates will be deleted either. 
-        //(While the parameter DataFlag  of the Function "ClearData" is 5 )
-        //private void btnClearDataUserInfo_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    int iDataFlag = 5;
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.ClearData(iMachineNumber, iDataFlag))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //        MessageBox.Show("Clear all the UserInfo data!", "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-        //}
-
-        //Delete a kind of data that some user has enrolled
-        //The range of the Backup Number is from 0 to 9 and the specific meaning of Backup number is described in the development manual,pls refer to it.
-        public void btnDeleteEnrollData_Click(string userId)
-        {
-            if (bIsConnected == false)
-            {
-                System.Console.Write("Please connect the device first!", "Error");
-                return;
-            }
-            int idwErrorCode = 0;
-            if (axCZKEM1.SSR_DeleteEnrollData(iMachineNumber, userId, 12)) //12 means delete user info
-            {
-                axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-                System.Diagnostics.Debug.WriteLine("Successfully delete user info");
-            }
-            else
-            {
-                axCZKEM1.GetLastError(ref idwErrorCode);
-                System.Diagnostics.Debug.WriteLine("Operation failed,ErrorCode=" + idwErrorCode.ToString());
-            }
-        }
-
-        //Clear all the administrator privilege(not clear the administrators themselves)
-        //private void btnClearAdministrators_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.ClearAdministrators(iMachineNumber))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //        MessageBox.Show("Successfully clear administrator privilege from teiminal!", "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-        //}
-
-        //Download users' face templates(in strings)(For TFT screen IFace series devices only)
-        //private void btnDownLoadFace_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-
-        //    string sUserID = "";
-        //    string sName = "";
-        //    string sPassword = "";
-        //    int iPrivilege = 0;
-        //    bool bEnabled = false;
-        //    int iFaceIndex = 50;//the only possible parameter value
-        //    string sTmpData = "";
-        //    int iLength = 0;
-
-        //    lvFace.Items.Clear();
-        //    lvFace.BeginUpdate();
-
-        //    Cursor = Cursors.WaitCursor;
-        //    axCZKEM1.EnableDevice(iMachineNumber, false);
-        //    axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
-
-        //    while (axCZKEM1.SSR_GetAllUserInfo(iMachineNumber, out sUserID, out sName, out sPassword, out iPrivilege, out bEnabled))//get all the users' information from the memory
-        //    {
-        //        if (axCZKEM1.GetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, ref sTmpData, ref iLength))//get the face templates from the memory
-        //        {
-        //            ListViewItem list = new ListViewItem();
-        //            list.Text = sUserID;
-        //            list.SubItems.Add(sName);
-        //            list.SubItems.Add(sPassword);
-        //            list.SubItems.Add(iPrivilege.ToString());
-        //            list.SubItems.Add(iFaceIndex.ToString());
-        //            list.SubItems.Add(sTmpData);
-        //            list.SubItems.Add(iLength.ToString());
-        //            if (bEnabled == true)
-        //            {
-        //                list.SubItems.Add("true");
-        //            }
-        //            else
-        //            {
-        //                list.SubItems.Add("false");
-        //            }
-        //            lvFace.Items.Add(list);
-        //        }
-        //    }
-        //    axCZKEM1.EnableDevice(iMachineNumber, true);
-        //    lvFace.EndUpdate();
-        //    Cursor = Cursors.Default;
-        //}
-
-        //Upload users' face template(in strings)(For TFT screen IFace series devices only)
-        //Uploading the face templates in batches is not supported temporarily.
-        //private void btnUploadFace_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    string sUserID = "";
-        //    string sName = "";
-        //    int iFaceIndex = 0;
-        //    string sTmpData = "";
-        //    int iLength = 0;
-        //    int iPrivilege = 0;
-        //    string sPassword = "";
-        //    string sEnabled = "";
-        //    bool bEnabled = false;
-
-        //    Cursor = Cursors.WaitCursor;
-        //    axCZKEM1.EnableDevice(iMachineNumber, false);
-        //    for (int i = 0; i < lvFace.Items.Count; i++)
-        //    {
-        //        sUserID = lvFace.Items[i].SubItems[0].Text;
-        //        sName = lvFace.Items[i].SubItems[1].Text;
-        //        sPassword = lvFace.Items[i].SubItems[2].Text;
-        //        iPrivilege = Convert.ToInt32(lvFace.Items[i].SubItems[3].Text);
-        //        iFaceIndex = Convert.ToInt32(lvFace.Items[i].SubItems[4].Text);
-        //        sTmpData = lvFace.Items[i].SubItems[5].Text;
-        //        iLength = Convert.ToInt32(lvFace.Items[i].SubItems[6].Text);
-        //        sEnabled = lvFace.Items[i].SubItems[7].Text;
-        //        if (sEnabled == "true")
-        //        {
-        //            bEnabled = true;
-        //        }
-        //        else
-        //        {
-        //            bEnabled = false;
-        //        }
-
-        //        if (axCZKEM1.SSR_SetUserInfo(iMachineNumber, sUserID, sName, sPassword, iPrivilege, bEnabled))//face templates are part of users' information
-        //        {
-        //            axCZKEM1.SetUserFaceStr(iMachineNumber, sUserID, iFaceIndex, sTmpData, iLength);//upload face templates information to the device
-        //        }
-        //        else
-        //        {
-        //            axCZKEM1.GetLastError(ref idwErrorCode);
-        //            MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //            Cursor = Cursors.Default;
-        //            axCZKEM1.EnableDevice(iMachineNumber, true);
-        //            return;
-        //        }
-        //    }
-
-        //    axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-        //    Cursor = Cursors.Default;
-        //    axCZKEM1.EnableDevice(iMachineNumber, true);
-        //    MessageBox.Show("Successfully Upload the face templates, " + "total:" + lvFace.Items.Count.ToString(), "Success");
-        //}
-
-
-        //Delete a certain user's face template according to its id
-        //private void btnDelUserFace_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-
-        //    if (cbUserID3.Text.Trim() == "")
-        //    {
-        //        MessageBox.Show("Please input the UserID first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    string sUserID = cbUserID3.Text.Trim();
-        //    int iFaceIndex = 50;
-
-        //    Cursor = Cursors.WaitCursor;
-        //    if (axCZKEM1.DelUserFace(iMachineNumber, sUserID, iFaceIndex))
-        //    {
-        //        axCZKEM1.RefreshData(iMachineNumber);
-        //        MessageBox.Show("DelUserFace,UserID=" + sUserID, "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-        //    Cursor = Cursors.Default;
-
-        //}
-
-        //Download specified user's face template (in bytes array)    
-        //You can refer to the part of "Udisk data Management" to learn how to manage the user's binary template(Get or Set)
-        //private void btnGetUserFace_Click(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        MessageBox.Show("Please connect the device first!", "Error");
-        //        return;
-        //    }
-
-        //    if (cbUserID3.Text.Trim() == "")
-        //    {
-        //        MessageBox.Show("Please input the UserID first!", "Error");
-        //        return;
-        //    }
-        //    int idwErrorCode = 0;
-
-        //    string sUserID = cbUserID3.Text.Trim();
-        //    int iFaceIndex = 50;//the only possible parameter value
-        //    int iLength = 128 * 1024;//initialize the length(cannot be zero)
-        //    byte[] byTmpData = new byte[iLength];
-
-        //    Cursor = Cursors.WaitCursor;
-        //    axCZKEM1.EnableDevice(iMachineNumber, false);
-
-        //    if (axCZKEM1.GetUserFace(iMachineNumber, sUserID, iFaceIndex, ref byTmpData[0], ref iLength))
-        //    {
-        //        //Here you can manage the information of the face templates according to your request.(for example,you can sava them to the database)
-        //        MessageBox.Show("GetUserFace,the  length of the bytes array byTmpData is " + iLength.ToString(), "Success");
-        //    }
-        //    else
-        //    {
-        //        axCZKEM1.GetLastError(ref idwErrorCode);
-        //        MessageBox.Show("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
-        //    }
-
-        //    axCZKEM1.EnableDevice(iMachineNumber, true);
-        //    Cursor = Cursors.Default;
-        //}
-
-        //add by Darcy on Nov.23 2009
-        //Add the existed userid to DropDownLists.
-        //bool bAddControl = true;
-        //private void UserIDTimer_Tick(object sender, EventArgs e)
-        //{
-        //    if (bIsConnected == false)
-        //    {
-        //        //cbUserIDDE.Items.Clear();
-        //        //cbUserIDTmp.Items.Clear();
-        //        bAddControl = true;
-        //        return;
-        //    }
-        //    else
-        //    {
-        //        if (bAddControl == true)
-        //        {
-        //            string sEnrollNumber = "";
-        //            string sName = "";
-        //            string sPassword = "";
-        //            int iPrivilege = 0;
-        //            bool bEnabled = false;
-
-        //            axCZKEM1.EnableDevice(iMachineNumber, false);
-        //            axCZKEM1.ReadAllUserID(iMachineNumber);//read all the user information to the memory
-        //            while (axCZKEM1.SSR_GetAllUserInfo(iMachineNumber, out sEnrollNumber, out sName, out sPassword, out iPrivilege, out bEnabled))
-        //            {
-        //                //cbUserIDDE.Items.Add(sEnrollNumber);
-        //                //cbUserIDTmp.Items.Add(sEnrollNumber);
-        //            }
-        //            bAddControl = false;
-        //            axCZKEM1.EnableDevice(iMachineNumber, true);
-        //        }
-        //        return;
-        //    }
-        //}
         #endregion
         #region RealTime Events
         //If your fingerprint(or your card or face) passes the verification,this event will be triggered
-        private void axCZKEM1_OnAttTransactionEx(string sEnrollNumber, int iIsInValid, int iAttState, int iVerifyMethod, int iYear, int iMonth, int iDay, int iHour, int iMinute, int iSecond, int iWorkCode)
+        private void AxCZKEM1_OnAttTransactionEx(string sEnrollNumber, int iIsInValid, int iAttState, int iVerifyMethod, int iYear, int iMonth, int iDay, int iHour, int iMinute, int iSecond, int iWorkCode)
         {
             string url = "http://vegstore.utstar.com.cn:8081/send_msg"; /*"http://10.4.32.248:8500/api/sw_version"*/
             HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
@@ -871,14 +267,12 @@ namespace UserInfo
             //    "}";
             string logTime = iYear.ToString() + "-" + iMonth.ToString() + "-" + iDay.ToString() + " " +
                             iHour.ToString() + ":" + iMinute.ToString() + ":" + iSecond.ToString();
-            DateTime logDateTime;
-            DateTime.TryParse(logTime, out logDateTime);
+            DateTime.TryParse(logTime, out DateTime logDateTime);
             int idwYear=0, idwMonth=0, idwDay=0, idwHour=0, idwMinute=0, idwSecond=0;
             axCZKEM1.GetDeviceTime(iMachineNumber, ref idwYear, ref idwMonth, ref idwDay, ref idwHour, ref idwMinute, ref idwSecond);
             string machieTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
-            DateTime machineDateTime;
-            DateTime.TryParse(machieTime, out machineDateTime);
+            DateTime.TryParse(machieTime, out DateTime machineDateTime);
             if (machineDateTime == DateTime.MinValue)
             {
                 return;
