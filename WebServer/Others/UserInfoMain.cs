@@ -74,17 +74,22 @@ namespace UserInfo
         }
         private void Sync_time(object source, ElapsedEventArgs e)
         {
-            if (DateTime.Now.Hour == 23 && DateTime.Now.Minute == 59)
+            if (DateTime.Now.Hour == 23 && (30 <= DateTime.Now.Minute) && (DateTime.Now.Minute <= 59))
             {
+                ILog loginfo = log4net.LogManager.GetLogger("loguserinfo");
                 int idwYear = 0, idwMonth = 0, idwDay = 0, idwHour = 0, idwMinute = 0, idwSecond = 0;
                 axCZKEM1.GetDeviceTime(iMachineNumber, ref idwYear, ref idwMonth, ref idwDay, ref idwHour, ref idwMinute, ref idwSecond);
                 string machieTime = idwYear.ToString() + "-" + idwMonth.ToString() + "-" + idwDay.ToString() + " " +
                             idwHour.ToString() + ":" + idwMinute.ToString() + ":" + idwSecond.ToString();
                 DateTime.TryParse(machieTime, out DateTime machineDateTime);
-                if ((DateTime.Now - machineDateTime).TotalSeconds > 5)
+                loginfo.InfoFormat("in sync_time ,time diff: {0}, machine is: {1}", (DateTime.Now - machineDateTime).TotalSeconds, iMachineNumber);
+                if (((DateTime.Now - machineDateTime).TotalSeconds > 5) || ((DateTime.Now - machineDateTime).TotalSeconds < -5))
                 {
+                    
+                    loginfo.InfoFormat("sync time from server "+iMachineNumber .ToString());
                     axCZKEM1.SetDeviceTime(iMachineNumber);
                 }
+                
             }                
         }
         public void StartUpTickJob()
@@ -306,7 +311,7 @@ namespace UserInfo
                     StreamReader reader = new StreamReader(response.GetResponseStream());
                     //System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
                     ILog loginfo = log4net.LogManager.GetLogger("loguserinfo");
-                    loginfo.InfoFormat(sEnrollNumber + " " + reader.ReadToEnd());
+                    loginfo.Info(sEnrollNumber + " " + reader.ReadToEnd());
                 }
 
             }
