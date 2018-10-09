@@ -12,9 +12,12 @@ namespace OWIN_SignalR.Controller
 {
     public class SignalRController : ApiController
     {
+        public static readonly log4net.ILog loginfo = log4net.LogManager.GetLogger("loginfo");
+        public static readonly log4net.ILog logerr = log4net.LogManager.GetLogger("logerr");
         [HttpPost]
         public HttpResponseMessage PostAttLogs(dynamic obj)
         {
+            loginfo.InfoFormat("PostAttLogs obj={0}", obj);
             try
             {
                 string begin_time = Convert.ToString(obj.begin_time);
@@ -26,7 +29,8 @@ namespace OWIN_SignalR.Controller
                 }
                 if (id > WebServer.WebApiApplication.users.Length)
                 {
-                    System.Diagnostics.Debug.WriteLine("has no machine number");
+                    //System.Diagnostics.Debug.WriteLine("has no machine number");
+                    logerr.Error("has no machine number");
                     return new HttpResponseMessage()
                     {
                         Content = new StringContent("{\"code\":1,\"msg\":\"has no such machine number\",\"output\":[]}", Encoding.UTF8, "application/json"),
@@ -37,7 +41,8 @@ namespace OWIN_SignalR.Controller
                 bCvtETime = DateTime.TryParse(end_time, out DateTime t2);
                 if ((bCvtBTime ^ bCvtETime) == true || (bCvtBTime == true && (t2 < t1)))
                 {
-                    System.Diagnostics.Debug.WriteLine("bad parameter");
+                    //System.Diagnostics.Debug.WriteLine("bad parameter");
+                    logerr.Error("bad parameter");
                     return new HttpResponseMessage()
                     {
                         Content = new StringContent("{\"code\":1,\"msg\":\"begin time must less than end time...\",\"output\":[]}", Encoding.UTF8, "application/json"),
@@ -72,7 +77,8 @@ namespace OWIN_SignalR.Controller
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine(e.Message );
+                //System.Diagnostics.Debug.WriteLine(e.Message );
+                logerr.Error(e.Message);
                 return new HttpResponseMessage()
                 {
                     Content = new StringContent("{\"code\":1,\"msg\":\""+e.Message+"\",\"output\":[]}", Encoding.UTF8, "application/json"),
@@ -84,6 +90,7 @@ namespace OWIN_SignalR.Controller
         [HttpDelete]
         public IHttpActionResult DeleteAttLogs(string id)
         {
+            loginfo.InfoFormat("DeleteAttLogs id={0}", id);
             if (id == null)
             {
                 id = "1";
@@ -91,11 +98,13 @@ namespace OWIN_SignalR.Controller
             int index = Convert.ToInt32(id);
             if (index > WebServer.WebApiApplication.users.Length || index < 1)
             {
-                System.Diagnostics.Debug.WriteLine("has no machine number");
+                //System.Diagnostics.Debug.WriteLine("has no machine number");
+                logerr.Error("has no machine number");
                 return Ok(-1);
             }
             WebServer.WebApiApplication.users[index - 1].BtnClearGLog_Click();
-            System.Diagnostics.Debug.WriteLine("delete att logs successfull"+id);
+            //System.Diagnostics.Debug.WriteLine("delete att logs successfull"+id);
+            loginfo.InfoFormat("delete att logs successfull" + id);
             return Ok(0);
         }    
     }

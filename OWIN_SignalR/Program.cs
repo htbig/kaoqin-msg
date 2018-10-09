@@ -14,6 +14,8 @@ namespace OWIN_SignalR
         static void Main(string[] args)
         {
             string url = "http://+:6666/";
+            log4net.ILog loginfo = log4net.LogManager.GetLogger("loginfo");
+            loginfo.InfoFormat("Server running on {0}", url);
             WebServer.WebApiApplication.Application_Start();
             using (WebApp.Start<Startup>(url))
             {

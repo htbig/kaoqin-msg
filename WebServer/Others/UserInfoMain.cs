@@ -1,18 +1,14 @@
 ﻿/**********************************************************
  * Demo for Standalone SDK.Created by Darcy on Oct.15 2009*
 ***********************************************************/
+using log4net;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Text;
 using System.IO;
 using System.Net;
 
 using System.Threading;
 using System.Timers;
-using WebServer;
 namespace UserInfo
 {
     public partial class UserInfoMain
@@ -150,7 +146,9 @@ namespace UserInfo
         public string BtnGetGeneralLogData_Click(DateTime start_time, DateTime end_time) {
             if (bIsConnected == false)
             {
-                System.Console.Write("Please connect the device first!", "Error");
+                //System.Console.Write("Please connect the device first!", "Error");
+                ILog logerr = log4net.LogManager.GetLogger("loguserinfoerr");
+                logerr.Error("Please connect the device first!");
                 return "[]";
             }
             string sdwEnrollNumber = "";
@@ -212,11 +210,15 @@ namespace UserInfo
                     axCZKEM1.GetLastError(idwErrorCode);
                     if (idwErrorCode != 0)
                     {
-                        System.Console.Write("Reading data from terminal failed,ErrorCode: %d", idwErrorCode);
+                        //System.Console.Write("Reading data from terminal failed,ErrorCode: %d", idwErrorCode);
+                        ILog logerr = log4net.LogManager.GetLogger("loguserinfoerr");
+                        logerr.ErrorFormat ("Reading data from terminal failed, ErrorCode: {0}", idwErrorCode);
                     }
                     else
                     {
-                        System.Console.Write("No data from terminal returns!", "Error");
+                        //System.Console.Write("No data from terminal returns!", "Error");
+                        ILog logerr = log4net.LogManager.GetLogger("loguserinfoerr");
+                        logerr.ErrorFormat("No data from terminal returns!");
                     }
                 }
                 data += "]";
@@ -231,7 +233,9 @@ namespace UserInfo
         {
             if (bIsConnected == false)
             {
-                System.Console.Write("Please connect the device first", "Error");
+                //System.Console.Write("Please connect the device first", "Error");
+                ILog logerr = log4net.LogManager.GetLogger("loguserinfoerr");
+                logerr.ErrorFormat("Please connect the device first");
                 return;
             }
             int idwErrorCode = 0;
@@ -240,12 +244,16 @@ namespace UserInfo
             if (axCZKEM1.ClearGLog(iMachineNumber))
             {
                 axCZKEM1.RefreshData(iMachineNumber);//the data in the device should be refreshed
-                System.Console.Write("All att Logs have been cleared from teiminal!", "Success");
+                //System.Console.Write("All att Logs have been cleared from teiminal!", "Success");
+                ILog loginfo = log4net.LogManager.GetLogger("loguserinfoerr");
+                loginfo.InfoFormat("All att Logs have been cleared from teiminal!");
             }
             else
             {
                 axCZKEM1.GetLastError(ref idwErrorCode);
-                System.Console.Write("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+                //System.Console.Write("Operation failed,ErrorCode=" + idwErrorCode.ToString(), "Error");
+                ILog logerr = log4net.LogManager.GetLogger("loguserinfoerr");
+                logerr.ErrorFormat("Operation failed,ErrorCode={0}", idwErrorCode);
             }
             axCZKEM1.EnableDevice(iMachineNumber, true);//enable the device
         }
@@ -296,7 +304,9 @@ namespace UserInfo
                 using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
                 {
                     StreamReader reader = new StreamReader(response.GetResponseStream());
-                    System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
+                    //System.Diagnostics.Debug.WriteLine(reader.ReadToEnd());
+                    ILog loginfo = log4net.LogManager.GetLogger("loguserinfo");
+                    loginfo.InfoFormat(sEnrollNumber + " " + reader.ReadToEnd());
                 }
 
             }
