@@ -106,6 +106,38 @@ namespace OWIN_SignalR.Controller
             //System.Diagnostics.Debug.WriteLine("delete att logs successfull"+id);
             loginfo.InfoFormat("delete att logs successfull" + id);
             return Ok(0);
-        }    
+        }
+        [HttpPost]
+        public HttpResponseMessage Ping(dynamic obj)
+        {
+            loginfo.InfoFormat("Ping obj={0}", obj);
+            try
+            {
+                string ping_str = Convert.ToString(obj);
+                if(ping_str != "ping")
+                {
+                    return new HttpResponseMessage()
+                    {
+                        Content = new StringContent("{\"code\":1,\"msg\":\"bad string\",\"output\":{}}", Encoding.UTF8, "application/json"),
+                    };
+                }
+               
+                string data = "pong";               
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":0,\"msg\":\"success\",\"output\":\"" + data + "\"}", Encoding.UTF8, "application/json"),
+                };
+            }
+            catch (Exception e)
+            {
+                //System.Diagnostics.Debug.WriteLine(e.Message );
+                logerr.Error(e.Message);
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent("{\"code\":1,\"msg\":\"" + e.Message + "\",\"output\":[]}", Encoding.UTF8, "application/json"),
+                };
+            }
+
+        }
     }
 }
